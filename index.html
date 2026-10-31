@@ -1434,14 +1434,15 @@ arm(host){
 /* ---------- Reise eines Bissens ---------- */
 verdauung(host){
   const s=simFrame(host,'Die Reise eines Bissens','Begleite ein Stück Vollkornbrot auf seinem Weg durch den Körper. Tippe auf „Weiter“.');
-  const st=[['Mund','etwa 1 Minute','Die Zähne zerkleinern das Brot. Speichel macht es gleitfähig und beginnt schon, Stärke in Zucker zu zerlegen. (Kau lange – dann schmeckt Brot süßlich!)',[130,60]],
-    ['Speiseröhre','etwa 10 Sekunden','Muskeln schieben den Bissen wellenartig nach unten – sogar im Handstand.',[132,105]],
-    ['Magen','2–4 Stunden','Der Magen knetet den Brei. Magensaft mit Säure tötet Keime und beginnt, Eiweiß zu zerlegen.',[178,172]],
-    ['Dünndarm','3–6 Stunden','Galle aus der Leber und Saft aus der Bauchspeicheldrüse zerlegen die Nährstoffe. Über die Darmzotten gelangen sie ins Blut. Der Dünndarm ist 5–7 Meter lang!',[134,263]],
-    ['Dickdarm','bis zu 1–2 Tage','Dem Brei wird Wasser entzogen. Darmbakterien helfen, Ballaststoffe abzubauen.',[134,224]],
-    ['Mastdarm und After','am Ende','Unverdauliche Reste werden gesammelt und als Stuhl ausgeschieden.',[130,352]]];
-  const svgStr=SVG.verdauung().replace('</svg>',`<path id="trk" d="${TRACT_PATH}" style="fill:none;stroke:none"/><circle id="bit" r="8" style="fill:var(--root);stroke:var(--paper);stroke-width:2"/></svg>`);
-  const stage=h('div',{class:'stage',html:svgStr,style:'max-width:420px'});
+  const st=[['Mund','etwa 1 Minute','Die Zähne zerkleinern das Brot. Speichel macht es gleitfähig und beginnt schon, Stärke in Zucker zu zerlegen. (Kau lange – dann schmeckt Brot süßlich!)',[232,150]],
+    ['Speiseröhre','etwa 10 Sekunden','Muskeln schieben den Bissen wellenartig nach unten – sogar im Handstand.',[303,280]],
+    ['Magen','2–4 Stunden','Der Magen knetet den Brei. Magensaft mit Säure tötet Keime und beginnt, Eiweiß zu zerlegen.',[372,452]],
+    ['Dünndarm','3–6 Stunden','Galle aus der Leber und Saft aus der Bauchspeicheldrüse zerlegen die Nährstoffe. Über die Darmzotten gelangen sie ins Blut. Der Dünndarm ist 5–7 Meter lang!',[300,655]],
+    ['Dickdarm','bis zu 1–2 Tage','Dem Brei wird Wasser entzogen. Darmbakterien helfen, Ballaststoffe abzubauen.',[300,566]],
+    ['Mastdarm und After','am Ende','Unverdauliche Reste werden gesammelt und als Stuhl ausgeschieden.',[288,830]]];
+  const T2='M232 150 Q262 150 285 166 Q298 176 300 192 L301 240 L302 300 Q304 360 318 395 Q326 412 345 418 Q380 428 392 455 Q398 482 370 492 Q340 500 300 492 Q272 492 264 512 Q258 540 276 558 Q292 570 300 586 Q296 604 260 606 Q224 610 232 628 Q246 640 300 636 Q354 632 372 646 Q384 668 340 670 Q290 672 240 668 Q214 672 222 692 Q236 708 300 704 Q356 700 372 712 Q378 730 336 732 Q280 734 222 712 Q200 704 186 702 Q178 680 180 640 Q181 600 186 575 Q192 556 212 556 Q260 566 320 568 Q370 566 398 548 Q410 556 408 600 Q410 660 405 716 Q400 742 360 746 Q318 748 296 742 Q284 760 286 800 L288 842';
+  const svgStr=`<svg viewBox="0 0 600 900" role="img" aria-label="Verdauungsorgane mit wanderndem Bissen"><image href="${AB_IMG.verdauung}" x="0" y="0" width="600" height="900"/><path id="trk" d="${T2}" style="fill:none;stroke:none"/><circle id="bit" r="11" style="fill:#7a5530;stroke:#fff;stroke-width:3"/></svg>`;
+  const stage=h('div',{class:'stage',html:svgStr,style:'max-width:440px;background:#fff'});
   const path=$('#trk',stage),bit=$('#bit',stage);const total=path.getTotalLength();
   const lens=[];let from=0;st.forEach(x=>{let best=from,bd=1e9;for(let L=from;L<=total;L+=2){const p=path.getPointAtLength(L);const d=Math.hypot(p.x-x[3][0],p.y-x[3][1]);if(d<bd){bd=d;best=L}}lens.push(best);from=best});
   let cur=0,pos=0,raf;const info=h('div',{class:'info'});const steps=h('div',{class:'steps'});
