@@ -4,7 +4,7 @@ Unterrichtssammlung für **Biologie und Umweltbildung** an der Mittelschule (Ös
 
 Für jedes Thema gibt es:
 
-- **Arbeitsblatt** – mit Grafik, am iPad ausfüllbar, mit „Prüfen“ und „Lösungen“, für Lehrkräfte bearbeitbar (Text ändern, Aufgaben hinzufügen/entfernen), druckbar als PDF
+- **Arbeitsblatt** – mit Grafik, am iPad ausfüllbar, mit „Prüfen“ und „Lösungen“, für Lehrkräfte bearbeitbar (Text ändern, Aufgaben hinzufügen/entfernen), druckbar als PDF und als Word-Datei (.docx) speicherbar
 - **Simulation** – zum Ausprobieren und Beobachten
 - **Quiz** – 8 Fragen mit Erklärungen
 - **Spiele** – Sortieren, Memory, Reihenfolge
