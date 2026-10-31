@@ -12,7 +12,7 @@ Für jedes Thema gibt es:
 Außerdem:
 
 - **Arbeitsblätter A/B/C** je Thema: Grundlagen, Üben, Forschen (mit Versuchsprotokoll und Zeichenfeld)
-- **Bilderbibliothek** mit eigenen Zeichnungen zum Verzieren der Arbeitsblätter, plus eigene Bilder hochladen
+- **Bilderbibliothek** mit naturgetreuen Bildern (von der Lehrkraft mit KI erstellt) zum Verzieren der Arbeitsblätter, plus eigene Bilder hochladen
 - **Rätsel**: Kreuzworträtsel- und Wortsuchrätsel-Generator (Themenwörter oder eigene Wörter)
 - **Klassenspiele**: Live-Quiz (Beamer + iPads mit PIN/QR) und Millionenshow
 
