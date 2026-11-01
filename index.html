@@ -599,12 +599,14 @@ function renderSheet(topic,host){
   const bReset=h('button',{class:'btn',html:IC.reset+'Original',hidden:!saved});
   const bBank=h('button',{class:'btn on',html:IC.sheet+'Wörterkasten',title:'Wörterkasten ein- oder ausblenden (leichter / schwieriger)'});
   const bImg=h('button',{class:'btn',html:IC.img+'Bild einfügen'});
-  const bPrint=isFramed?null:h('button',{class:'btn',html:IC.print+'Drucken / PDF',onclick:()=>{if(sheet.classList.contains('edit'))bEdit.click();window.print()}});
-  const hint=h('span',{class:'hint'},isFramed?'Drucken: Werkstatt über GitHub Pages öffnen, dort „Drucken / PDF“.':'');
+  const bPrint=isFramed?null:h('button',{class:'btn',html:IC.print+'Drucken',onclick:()=>{if(sheet.classList.contains('edit'))bEdit.click();window.print()}});
+  const hint=h('span',{class:'hint'},'');
   const wStatus=h('span',{class:'hint',role:'status'});
   const bWord=h('button',{class:'btn',html:IC.word+'Word',title:'Als bearbeitbare Word-Datei (.docx) speichern – mit eingeschalteten Lösungen als Lösungsblatt'});
   bWord.onclick=()=>{if(sheet.classList.contains('edit'))bEdit.click();exportWord(sheet,topic,vi,bWord,wStatus)};
-  host.append(h('div',{class:'toolbar'},bCheck,bSol,bEdit,bImg,bAdd,bBank,bNew,bReset,bPrint,bWord,wStatus,hint));
+  const bPdf=h('button',{class:'btn',html:IC.print+'PDF',title:'Als PDF-Datei (A4) speichern – mit eingeschalteten Lösungen als Lösungsblatt'});
+  bPdf.onclick=()=>{if(sheet.classList.contains('edit'))bEdit.click();exportPdf(sheet,topic,vi,bPdf,wStatus)};
+  host.append(h('div',{class:'toolbar'},bCheck,bSol,bEdit,bImg,bAdd,bBank,bNew,bReset,bPrint,bPdf,bWord,wStatus,hint));
   if(topic.note)host.append(h('div',{class:'note',html:topic.note}));
   host.append(sheet);
 
@@ -2438,6 +2440,107 @@ async function exportWord(sheet,topic,vi,btn,status){
     const name=('Biologie '+topic.title+' Blatt '+'ABCDE'[vi]+(sheet.classList.contains('sol')?' Lösung':'')).replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,' ')+'.docx';
     const ok=await saveFile(blob,name);status.textContent=ok?'Word-Datei gespeichert.':'';
   }catch(e){status.textContent=e&&e.message&&!/docx|Laden/.test(e.message)?e.message:'Die Word-Datei konnte nicht erstellt werden. Bitte prüfe die Internetverbindung.'}
+  finally{noAnim.remove();if(prev)root.setAttribute('data-theme',prev);else root.removeAttribute('data-theme');btn.disabled=false;btn.innerHTML=label}
+}
+
+/* ===== PDF-Export: Arbeitsblatt seitenweise als A4-PDF ===== */
+const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Laden fehlgeschlagen'));document.head.append(s)});
+let pdfLibs=null;
+function loadPdfLibs(){
+  if(window.html2canvas&&window.PDFLib)return Promise.resolve();
+  if(pdfLibs)return pdfLibs;
+  const one=(test,urls)=>test()?Promise.resolve():urls.reduce((p,u)=>p.catch(()=>loadScript(u).then(()=>{if(!test())throw new Error('fehlt')})),Promise.reject());
+  pdfLibs=Promise.all([
+    one(()=>window.html2canvas,['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js']),
+    one(()=>window.PDFLib,['https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js','https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js'])
+  ]).catch(e=>{pdfLibs=null;throw e});
+  return pdfLibs;
+}
+/* SVG direkt auf Canvas zeichnen (zuverlässig auch am iPad) */
+function svgToCanvasUrl(svg){
+  return new Promise(async(res,rej)=>{
+    try{
+      const vb=(svg.getAttribute('viewBox')||'0 0 300 300').split(/[ ,]+/).map(Number);
+      const k=Math.min(3,1800/Math.max(vb[2],vb[3]));
+      const cv=document.createElement('canvas');cv.width=Math.round(vb[2]*k);cv.height=Math.round(vb[3]*k);
+      const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);
+      c.setTransform(k,0,0,k,-vb[0]*k,-vb[1]*k);
+      const els=[...svg.querySelectorAll('image,rect,line,circle,ellipse,path,text,polygon,polyline')];
+      const supported=els.every(e=>!e.closest('[transform]')||e.closest('[transform]')===e&&!e.getAttribute('transform'));
+      if(!supported)throw new Error('komplex');
+      for(const e of els){
+        const cs=getComputedStyle(e);const tag=e.tagName.toLowerCase();
+        if(cs.display==='none'||cs.visibility==='hidden')continue;
+        const op=parseFloat(cs.opacity||'1');c.globalAlpha=isNaN(op)?1:op;
+        const fill=cs.fill&&cs.fill!=='none'?cs.fill:null,stroke=cs.stroke&&cs.stroke!=='none'?cs.stroke:null;
+        c.lineWidth=parseFloat(cs.strokeWidth)||1;c.lineCap=cs.strokeLinecap||'butt';c.lineJoin=cs.strokeLinejoin||'miter';
+        const n=a=>parseFloat(e.getAttribute(a))||0;
+        if(tag==='image'){const href=e.getAttribute('href')||e.getAttribute('xlink:href');const im=await new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=href});c.drawImage(im,n('x'),n('y'),n('width'),n('height'));continue}
+        let p=new Path2D();
+        if(tag==='rect'){const rx=n('rx');if(rx&&p.roundRect)p.roundRect(n('x'),n('y'),n('width'),n('height'),rx);else p.rect(n('x'),n('y'),n('width'),n('height'))}
+        else if(tag==='line'){p.moveTo(n('x1'),n('y1'));p.lineTo(n('x2'),n('y2'))}
+        else if(tag==='circle'){p.arc(n('cx'),n('cy'),n('r'),0,Math.PI*2)}
+        else if(tag==='ellipse'){p.ellipse(n('cx'),n('cy'),n('rx'),n('ry'),0,0,Math.PI*2)}
+        else if(tag==='path'){p=new Path2D(e.getAttribute('d')||'')}
+        else if(tag==='polygon'||tag==='polyline'){const pts=(e.getAttribute('points')||'').trim().split(/[\s,]+/).map(Number);for(let i=0;i<pts.length;i+=2)i?p.lineTo(pts[i],pts[i+1]):p.moveTo(pts[i],pts[i+1]);if(tag==='polygon')p.closePath()}
+        else if(tag==='text'){c.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;const an=e.getAttribute('text-anchor')||cs.textAnchor;c.textAlign=an==='middle'?'center':an==='end'?'right':'left';
+          const db=e.getAttribute('dominant-baseline')||cs.dominantBaseline;c.textBaseline=db==='central'||db==='middle'?'middle':'alphabetic';c.fillStyle=fill||'#000';c.fillText(e.textContent,n('x'),n('y'));continue}
+        if(fill&&tag!=='line'){c.fillStyle=fill;c.fill(p)}
+        if(stroke){c.strokeStyle=stroke;c.stroke(p)}
+      }
+      c.globalAlpha=1;res(cv.toDataURL('image/png'));
+    }catch(err){
+      const vb=(svg.getAttribute('viewBox')||'0 0 300 300').split(/[ ,]+/).map(Number);const cl=inlineSvg(svg);cl.setAttribute('width',vb[2]);cl.setAttribute('height',vb[3]);
+      const im=new Image();im.onload=()=>{const cv=document.createElement('canvas');const k=Math.min(3,1800/Math.max(vb[2],vb[3]));cv.width=vb[2]*k;cv.height=vb[3]*k;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.drawImage(im,0,0,cv.width,cv.height);res(cv.toDataURL('image/png'))};
+      im.onerror=()=>rej(new Error('Grafik'));im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(cl));
+    }
+  });
+}
+async function sheetToPdf(sheet){
+  await loadPdfLibs();
+  const svgs=[...sheet.querySelectorAll('svg')].filter(s=>!s.closest('button')&&!s.closest('.deco-ctl'));
+  const pngs=[];for(const s of svgs){try{pngs.push(await svgToCanvasUrl(s))}catch(e){pngs.push(null)}}
+  const sizes=svgs.map(s=>{const r=s.getBoundingClientRect();return[r.width,r.height]});
+  let cuts=[],sheetH=0;const PAGE_W=794;
+  const canvas=await window.html2canvas(sheet,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:1280,
+    onclone:(doc)=>{
+      const cs=doc.getElementById('sheet');if(!cs)return;
+      cs.classList.remove('edit');cs.style.boxShadow='none';cs.style.border='0';cs.style.borderRadius='0';cs.style.width=PAGE_W+'px';cs.style.maxWidth='none';cs.style.margin='0';cs.style.padding='36px 40px';
+      cs.querySelectorAll('.del,.deco-ctl').forEach(x=>x.remove());
+      const cl=[...cs.querySelectorAll('svg')].filter(s=>!s.closest('button'));
+      cl.forEach((s,i)=>{if(!pngs[i])return;const img=doc.createElement('img');img.src=pngs[i];const vb=(s.getAttribute('viewBox')||'0 0 1 1').split(/[ ,]+/).map(Number);img.style.width='100%';img.style.maxWidth=(svgs[i].closest('.chartblk')?'520px':'100%');img.style.height='auto';img.style.aspectRatio=vb[2]+'/'+vb[3];img.style.display='block';s.replaceWith(img)});
+      cs.querySelectorAll('textarea').forEach(t=>{const d=doc.createElement('div');d.textContent=t.value;d.style.cssText='min-height:'+(t.rows*30)+'px;line-height:30px;white-space:pre-wrap;background:repeating-linear-gradient(transparent 0 29px,#888 29px 30px);color:#2B6C9C;font-weight:700';t.replaceWith(d)});
+      const top=cs.getBoundingClientRect().top;sheetH=cs.getBoundingClientRect().height;
+      cuts=[...cs.querySelectorAll('.blk')].map(b=>{const r=b.getBoundingClientRect();return[r.top-top-8,r.bottom-top+8]});
+    }});
+  const pxPerCss=canvas.width/(PAGE_W);const pageHcss=PAGE_W*297/210;
+  const pages=[];let start=0;const total=canvas.height/pxPerCss;
+  while(start<total-4){
+    let end=Math.min(total,start+pageHcss);
+    if(end<total){const ok=cuts.map(c=>c[0]).filter(y=>y>start+80&&y<=end);if(ok.length)end=Math.max(...ok)}
+    pages.push([start,end]);start=end;
+  }
+  const {PDFDocument}=window.PDFLib;const pdf=await PDFDocument.create();
+  const A4=[595.28,841.89],M=0;
+  for(const[a,b]of pages){
+    const sc=document.createElement('canvas');sc.width=canvas.width;sc.height=Math.round(pageHcss*pxPerCss);
+    const c=sc.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,sc.width,sc.height);
+    c.drawImage(canvas,0,Math.round(a*pxPerCss),canvas.width,Math.round((b-a)*pxPerCss),0,0,canvas.width,Math.round((b-a)*pxPerCss));
+    const blob=await new Promise(r=>sc.toBlob(r,'image/jpeg',.92));const img=await pdf.embedJpg(await blob.arrayBuffer());
+    const page=pdf.addPage(A4);page.drawImage(img,{x:M,y:M,width:A4[0]-2*M,height:A4[1]-2*M});
+  }
+  const bytes=await pdf.save();return new Blob([bytes],{type:'application/pdf'});
+}
+async function exportPdf(sheet,topic,vi,btn,status){
+  const label=btn.innerHTML;btn.disabled=true;btn.innerHTML=IC.print+'Wird erstellt …';status.textContent='';
+  const root=document.documentElement,prev=root.getAttribute('data-theme');root.setAttribute('data-theme','light');
+  const noAnim=document.createElement('style');noAnim.textContent='*{transition:none!important;animation:none!important}';document.head.append(noAnim);
+  try{
+    await new Promise(r=>setTimeout(r,60));
+    const blob=await sheetToPdf(sheet);
+    const name=('Biologie '+topic.title+' Blatt '+'ABCDE'[vi]+(sheet.classList.contains('sol')?' Lösung':'')).replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,' ')+'.pdf';
+    const ok=await saveFile(blob,name);status.textContent=ok?'PDF gespeichert.':'';
+  }catch(e){status.textContent=e&&e.message&&!/Laden|fehlt/.test(e.message)?e.message:'Das PDF konnte nicht erstellt werden. Bitte prüfe die Internetverbindung.'}
   finally{noAnim.remove();if(prev)root.setAttribute('data-theme',prev);else root.removeAttribute('data-theme');btn.disabled=false;btn.innerHTML=label}
 }
 
