@@ -496,6 +496,69 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
 
 .picrow.contain img{object-fit:contain;background:#fff}
 .picrow.contain figure{flex:1 1 100px;max-width:140px}
+
+/* ===== A4-Seitenlayout ===== */
+.laybar{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;max-width:820px}
+.laybar select{border:1.5px solid var(--line);border-radius:999px;padding:7px 12px;background:var(--paper);font-weight:700}
+.lay-chk{display:flex;gap:6px;align-items:center;font-size:.85rem}
+.lay-info{font-size:.85rem;color:var(--leaf);font-weight:700;flex-basis:100%}
+.blk-pick{display:inline-flex;margin-right:4px}.blk-pick input{width:20px;height:20px;accent-color:var(--leaf)}
+.blk.off{opacity:.35}
+#lay-root{position:absolute;left:-10000px;top:0;width:794px}
+#print-root{display:none}
+.a4page{
+  --bg:#EEF3EC; --panel:#FFFFFF; --paper:#FFFFFF; --ink:#16241B; --muted:#58695D; --line:#CFDBCB;
+  --leaf:#2D7A47; --leaf-ink:#FFFFFF; --leaf-soft:#D8EAD6;
+  --pollen:#D99A0B; --pollen-soft:#FBEDC4;
+  --berry:#B4336A; --berry-soft:#F5DAE5;
+  --sky:#2B6C9C; --sky-soft:#D9E8F3;
+  --bone:#F1E9D4; --bone-line:#8E7F5E; --soil:#EFE3CF; --root:#9C7A51; --liver:#C7876A; --gut:#E6A29B; --colon:#D8B784;
+  --ok:#2D7A47; --ok-soft:#D8EAD6; --bad:#BF3B2B; --bad-soft:#F7DAD5;
+  --f-display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --r:10px;
+;color-scheme:light;color:var(--ink);background:#fff;width:794px;height:1123px;max-width:none;padding:34px 40px;box-sizing:border-box;overflow:hidden;border:0;border-radius:0;box-shadow:none;position:relative;font-family:var(--f-body);font-size:16px;line-height:1.5}
+.a4page .del,.a4page .blk-pick{display:none}
+.a4inner{transform-origin:top left}
+.a4page.multi{padding:0}
+.a4slot{overflow:hidden;padding:34px 40px;box-sizing:border-box;border-top:1.5px dashed #999}
+.a4slot:first-child{border-top:0}
+.pv-box{background:var(--paper);border-radius:16px;padding:18px;width:min(1100px,100%);max-height:90vh;overflow:auto;text-align:left}
+.modal>div.pv-box{max-width:1100px}
+.pv-strip{display:flex;flex-wrap:wrap;gap:16px}
+.pv-item{display:grid;gap:4px;justify-items:center}
+.pv-frame{width:min(360px,80vw);overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.25);background:#fff}
+.pv-frame>.a4page{transform-origin:top left}
+@media print{
+  body.printing-pages>*:not(#print-root){display:none!important}
+  body.printing-pages #print-root{display:block}
+  #print-root .a4page{page:a4full;break-after:page;page-break-after:always}
+  @page a4full{size:A4;margin:0}
+  .blk.off{display:none!important}
+}
+/* Kompakter Satz auf A4 */
+.a4page .blk{margin-top:14px}
+.a4page .blk h3{margin-bottom:6px;font-size:1rem}
+.a4page .gap{line-height:2.05}
+.a4page .ws-head{margin-bottom:10px;padding-bottom:6px}
+.a4page .ws-title{font-size:1.5rem;margin-bottom:4px}
+.a4page .ws-intro{margin-bottom:6px;font-size:.95rem}
+.a4page .fig.wide .figimg{max-width:520px;margin:0 auto}
+.a4page .fig:not(.wide) .figimg{max-width:300px}
+.a4page .fig:not(.wide){grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+.a4page .figimg img{max-height:400px}
+.a4page .picblk img{max-height:520px;width:auto;max-width:100%}
+.a4page .picrow{margin:2px 0 8px}
+.a4page .picrow figure{max-width:150px}
+.a4page .labels{gap:4px}
+.a4page .bank{margin-top:6px;padding:5px 10px;font-size:.88rem}
+.a4page .chartblk svg{max-width:420px}
+.a4page .drawbox{max-height:200px}
+.a4page .lines textarea,.a4page .lines>div{min-height:60px}
+.a4page .sheet table,.a4page table{font-size:.88rem}
+.a4page th,.a4page td{padding:5px 7px}
+.a4page .ws-foot{margin-top:12px}
+.a4page{text-align:left}
 </style>
 </head>
 <body>
@@ -610,14 +673,36 @@ function renderSheet(topic,host){
   const bReset=h('button',{class:'btn',html:IC.reset+'Original',hidden:!saved});
   const bBank=h('button',{class:'btn on',html:IC.sheet+'Wörterkasten',title:'Wörterkasten ein- oder ausblenden (leichter / schwieriger)'});
   const bImg=h('button',{class:'btn',html:IC.img+'Bild einfügen'});
-  const bPrint=isFramed?null:h('button',{class:'btn',html:IC.print+'Drucken',onclick:()=>{if(sheet.classList.contains('edit'))bEdit.click();window.print()}});
+  const bPrint=isFramed?null:h('button',{class:'btn',html:IC.print+'Drucken',onclick:()=>doPrint()});
   const hint=h('span',{class:'hint'},'');
   const wStatus=h('span',{class:'hint',role:'status'});
   const bWord=h('button',{class:'btn',html:IC.word+'Word',title:'Als bearbeitbare Word-Datei (.docx) speichern – mit eingeschalteten Lösungen als Lösungsblatt'});
-  bWord.onclick=()=>{if(sheet.classList.contains('edit'))bEdit.click();exportWord(sheet,topic,vi,bWord,wStatus)};
+  let lay=getLay(key);
+  const layInfo=h('span',{class:'lay-info',role:'status'},'');
+  const selLay=h('select',{id:'lay-sel','aria-label':'Seitenformat'},h('option',{value:'1'},'1 A4-Seite'),h('option',{value:'2'},'2× pro Seite (halbe Seite)'),h('option',{value:'3'},'3× pro Seite (Drittel)'));selLay.value=String(lay.copies);
+  const chkShrink=h('label',{class:'lay-chk'},h('input',{type:'checkbox',id:'lay-shrink',checked:lay.shrink}),' leicht verkleinern statt aufteilen');
+  const refreshLay=async()=>{layInfo.textContent='Seitenformat wird berechnet …';try{
+    const one=await planPages(sheet,{copies:1,shrink:true});const frac=(one.total+2*PADY+one.footH)/A4H;
+    const o2=selLay.options[1],o3=selLay.options[2];o2.disabled=frac>0.62;o3.disabled=frac>0.42;
+    o2.textContent='2× pro Seite (halbe Seite)'+(o2.disabled?' – Blatt zu lang':'');o3.textContent='3× pro Seite (Drittel)'+(o3.disabled?' – Blatt zu lang':'');
+    if(selLay.options[selLay.selectedIndex].disabled){selLay.value='1';lay.copies=1;setLay(key,lay);chkShrink.hidden=false}
+    const pl=lay.copies===1&&lay.shrink?one:await planPages(sheet,lay);layInfo.textContent=pl.info}catch(e){layInfo.textContent=''}};
+  selLay.onchange=()=>{lay.copies=+selLay.value;setLay(key,lay);chkShrink.hidden=lay.copies>1;refreshLay()};
+  $('input',chkShrink).onchange=e=>{lay.shrink=e.target.checked;setLay(key,lay);refreshLay()};chkShrink.hidden=lay.copies>1;
+  const bPick=h('button',{class:'btn',html:IC.check+'Aufgaben wählen',title:'Aufgaben für das ausgedruckte Blatt an- oder abwählen'});
+  bPick.onclick=()=>{const on=sheet.classList.toggle('pick');bPick.classList.toggle('on',on);
+    $$('.blk',sheet).forEach(b=>{let p=$('.blk-pick',b);if(on&&!p){p=h('label',{class:'blk-pick',title:'Aufgabe aufs Blatt'},h('input',{type:'checkbox',checked:!b.classList.contains('off'),onchange:e=>{b.classList.toggle('off',!e.target.checked);save();refreshLay()}}));$('h3',b).prepend(p)}else if(!on&&p)p.remove()});
+    bPick.innerHTML=IC.check+(on?'Auswahl fertig':'Aufgaben wählen')};
+  const bView=h('button',{class:'btn',html:IC.eye+'Seitenansicht'});
+  const doPdf=()=>{if(sheet.classList.contains('edit'))bEdit.click();exportPdf(sheet,topic,vi,bPdf,wStatus,lay)};
+  const doWord=()=>{if(sheet.classList.contains('edit'))bEdit.click();exportWord(sheet,topic,vi,bWord,wStatus,lay)};
+  const doPrint=()=>{if(sheet.classList.contains('edit'))bEdit.click();printPages(sheet,lay)};
+  bView.onclick=()=>{if(sheet.classList.contains('edit'))bEdit.click();showPreview(sheet,lay,[{html:IC.print+'PDF',fn:doPdf,pri:true},{html:IC.word+'Word',fn:doWord},...(isFramed?[]:[{html:IC.print+'Drucken',fn:doPrint}])])};
+  bWord.onclick=doWord;
   const bPdf=h('button',{class:'btn',html:IC.print+'PDF',title:'Als PDF-Datei (A4) speichern – mit eingeschalteten Lösungen als Lösungsblatt'});
-  bPdf.onclick=()=>{if(sheet.classList.contains('edit'))bEdit.click();exportPdf(sheet,topic,vi,bPdf,wStatus)};
-  host.append(h('div',{class:'toolbar'},bCheck,bSol,bEdit,bImg,bAdd,bBank,bNew,bReset,bPrint,bPdf,bWord,wStatus,hint));
+  bPdf.onclick=doPdf;
+  host.append(h('div',{class:'toolbar'},bCheck,bSol,bEdit,bImg,bAdd,bBank,bNew,bReset,hint));
+  host.append(h('div',{class:'toolbar laybar'},h('b',{style:'font-size:.9rem'},'Ausgabe:'),selLay,chkShrink,bPick,bView,bPdf,bWord,bPrint,wStatus,layInfo));
   if(topic.note)host.append(h('div',{class:'note',html:topic.note}));
   host.append(sheet);
 
@@ -632,7 +717,7 @@ function renderSheet(topic,host){
   bImg.onclick=()=>{if(!sheet.classList.contains('edit'))bEdit.click();openLibrary(insertDeco)};
   sheet.addEventListener('click',e=>{const d=e.target.closest('[data-d]');if(!d)return;const fig=d.closest('figure.deco');const sz=['s','m','l','xl'];let cur=sz.findIndex(x=>fig.classList.contains(x));
     if(d.dataset.d==='x')fig.remove();else if(d.dataset.d==='f'){fig.classList.toggle('r');fig.classList.toggle('lft')}else{const n=Math.max(0,Math.min(3,cur+(d.dataset.d==='l'?1:-1)));fig.classList.remove(...sz);fig.classList.add(sz[n])}save()});
-  const save=()=>{const c=sheet.cloneNode(true);c.classList.remove('edit','sol');$$('[contenteditable]',c).forEach(e=>e.removeAttribute('contenteditable'));$$('input.a',c).forEach(i=>i.classList.remove('ok','bad','solv'));$$('.row',c).forEach(r=>r.classList.remove('ok','bad'));store.set(key,c.innerHTML);bReset.hidden=false};
+  const save=()=>{const c=sheet.cloneNode(true);c.classList.remove('pick');$$('.blk-pick',c).forEach(x=>x.remove());c.classList.remove('edit','sol');$$('[contenteditable]',c).forEach(e=>e.removeAttribute('contenteditable'));$$('input.a',c).forEach(i=>i.classList.remove('ok','bad','solv'));$$('.row',c).forEach(r=>r.classList.remove('ok','bad'));store.set(key,c.innerHTML);bReset.hidden=false};
   let tmr;sheet.addEventListener('input',e=>{if(sheet.classList.contains('edit')&&e.target.isContentEditable){clearTimeout(tmr);tmr=setTimeout(save,500)}});
   bEdit.onclick=()=>{const on=sheet.classList.toggle('edit');bEdit.classList.toggle('on',on);bAdd.hidden=!on;$$('.ed',sheet).forEach(e=>{if(on)e.contentEditable='true';else e.removeAttribute('contenteditable')});bEdit.innerHTML=IC.edit+(on?'Fertig':'Bearbeiten');if(!on)save()};
   bAdd.onclick=()=>{const wrap=$('.blks',sheet);const n=$$('.blk',sheet).length+1;wrap.insertAdjacentHTML('beforeend',blockHTML({t:'write',h:'Neue Aufgabe – hier tippen',lines:3},n));$$('.ed',wrap.lastElementChild).forEach(e=>e.contentEditable='true');renumber();save()};
@@ -647,6 +732,7 @@ function renderSheet(topic,host){
     $$('input.a',sheet).forEach(i=>{if(!i.dataset.a)return;if(on){i.dataset.prev=i.value;i.value=i.dataset.a.split('/')[0];i.classList.add('solv');i.classList.remove('ok','bad')}else{i.value=i.dataset.prev||'';i.classList.remove('solv')}});
     $$('.tf .row',sheet).forEach(r=>{if(on){const x=$(`input[value="${r.dataset.tf}"]`,r);r.dataset.prev=($('input:checked',r)||{}).value||'';x.checked=true}else{$$('input',r).forEach(x=>x.checked=x.value===r.dataset.prev)}});
   };
+  setTimeout(refreshLay,150);
   bNew.onclick=()=>{store.del(key);store.del(key+':cls');host.innerHTML='';renderSheet(topic,host)};
   bReset.onclick=()=>{store.del(key);store.del(key+':cls');host.innerHTML='';renderSheet(topic,host)};
   bNew.title='Wörterkasten, Zuordnungen und Reihenfolgen neu mischen (setzt Bearbeitungen zurück)';
@@ -2425,8 +2511,7 @@ function toPng(el,maxW){
   });
 }
 
-async function sheetToDocx(sheet){
-  const D=await loadDocx();
+async function docxChildren(sheet,D){
   const sol=sheet.classList.contains('sol'),noBank=sheet.classList.contains('nobank');
   const ink='16241B',grey='888888',green='D8EAD6';
   const T=(text,o={})=>new D.TextRun({text,...o});
@@ -2477,8 +2562,15 @@ async function sheetToDocx(sheet){
     const bank=$('.bank',blk);if(bank&&!noBank){const ws=$$('span',bank).map(s=>txt(s));children.push(P([T('Wörterkasten:  ',{bold:true}),T(ws.join('     '))],{border:{top:{style:D.BorderStyle.SINGLE,size:8,color:ink,space:4},bottom:{style:D.BorderStyle.SINGLE,size:8,color:ink,space:4},left:{style:D.BorderStyle.SINGLE,size:8,color:ink,space:6},right:{style:D.BorderStyle.SINGLE,size:8,color:ink,space:6}},spacing:{before:120,after:120}}))}
   }
   children.push(P(T('Biologie-Werkstatt · Lehrplan Biologie und Umweltbildung (MS)'+(sol?' · Lösungsblatt':''),{size:16,color:'58695D'}),{spacing:{before:400}}));
-  const doc=new D.Document({creator:'Biologie-Werkstatt',title:txt($('.ws-title',sheet)),styles:{default:{document:{run:{font:'Arial',size:22}}}},
-    sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:850,bottom:850,left:900,right:900}}},children}]});
+  return children;
+}
+async function sheetToDocx(sheets,copies){
+  const D=await loadDocx();if(!Array.isArray(sheets))sheets=[sheets];copies=copies||1;
+  const sections=[];
+  for(const s of sheets){let ch=await docxChildren(s,D);
+    if(copies>1){const one=ch;ch=[];for(let k=0;k<copies;k++){if(k)ch.push(new D.Paragraph({children:[new D.TextRun({text:'✂ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -',color:'888888'})],spacing:{before:120,after:120}}));ch.push(...(k?await docxChildren(s,D):one))}}
+    sections.push({properties:{page:{size:{width:11906,height:16838},margin:{top:850,bottom:850,left:900,right:900}}},children:ch})}
+  const doc=new D.Document({creator:'Biologie-Werkstatt',title:(sheets[0].querySelector('.ws-title')||{}).textContent||'Arbeitsblatt',styles:{default:{document:{run:{font:'Arial',size:22}}}},sections});
   return D.Packer.toBlob(doc);
 }
 
@@ -2491,12 +2583,12 @@ async function saveFile(blob,filename){
   const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download=filename;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},2000);return true;
 }
 
-async function exportWord(sheet,topic,vi,btn,status){
+async function exportWord(sheet,topic,vi,btn,status,lay){
   const label=btn.innerHTML;btn.disabled=true;btn.innerHTML=IC.word+'Wird erstellt …';status.textContent='';
   const root=document.documentElement,prev=root.getAttribute('data-theme');root.setAttribute('data-theme','light');
   const noAnim=document.createElement('style');noAnim.textContent='*{transition:none!important;animation:none!important}';document.head.append(noAnim);
   try{
-    const blob=await sheetToDocx(sheet);
+    const blob=await pagesToDocx(sheet,lay||{copies:1,shrink:true});
     const name=('Biologie '+topic.title+' Blatt '+'ABCDE'[vi]+(sheet.classList.contains('sol')?' Lösung':'')).replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,' ')+'.docx';
     const ok=await saveFile(blob,name);status.textContent=ok?'Word-Datei gespeichert.':'';
   }catch(e){status.textContent=e&&e.message&&!/docx|Laden/.test(e.message)?e.message:'Die Word-Datei konnte nicht erstellt werden. Bitte prüfe die Internetverbindung.'}
@@ -2591,17 +2683,156 @@ async function sheetToPdf(sheet){
   }
   const bytes=await pdf.save();return new Blob([bytes],{type:'application/pdf'});
 }
-async function exportPdf(sheet,topic,vi,btn,status){
+async function exportPdf(sheet,topic,vi,btn,status,lay){
   const label=btn.innerHTML;btn.disabled=true;btn.innerHTML=IC.print+'Wird erstellt …';status.textContent='';
   const root=document.documentElement,prev=root.getAttribute('data-theme');root.setAttribute('data-theme','light');
   const noAnim=document.createElement('style');noAnim.textContent='*{transition:none!important;animation:none!important}';document.head.append(noAnim);
   try{
     await new Promise(r=>setTimeout(r,60));
-    const blob=await sheetToPdf(sheet);
+    const blob=await pagesToPdf(sheet,lay||{copies:1,shrink:true});
     const name=('Biologie '+topic.title+' Blatt '+'ABCDE'[vi]+(sheet.classList.contains('sol')?' Lösung':'')).replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,' ')+'.pdf';
     const ok=await saveFile(blob,name);status.textContent=ok?'PDF gespeichert.':'';
   }catch(e){status.textContent=e&&e.message&&!/Laden|fehlt/.test(e.message)?e.message:'Das PDF konnte nicht erstellt werden. Bitte prüfe die Internetverbindung.'}
   finally{noAnim.remove();if(prev)root.setAttribute('data-theme',prev);else root.removeAttribute('data-theme');btn.disabled=false;btn.innerHTML=label}
+}
+
+/* ===== Seitenlayout: jedes Arbeitsblatt auf A4 (verkleinern, aufteilen oder mehrfach pro Seite) ===== */
+const A4W=794,A4H=1123,PADX=40,PADY=34;
+const layKey=key=>'lay:'+key;
+function getLay(key){try{return Object.assign({copies:1,shrink:true},JSON.parse(store.get(layKey(key))||'{}'))}catch(e){return{copies:1,shrink:true}}}
+function setLay(key,v){store.set(layKey(key),JSON.stringify(v))}
+
+/* Klon mit aktuellen Eingaben (Werte, Häkchen, Textfelder) */
+function cloneLive(el){
+  const c=el.cloneNode(true);
+  const si=el.querySelectorAll('input,textarea'),ci=c.querySelectorAll('input,textarea');
+  const suf='_c'+Math.random().toString(36).slice(2,7);
+  si.forEach((s,i)=>{const d=ci[i];if(!d)return;if(s.type==='radio'&&d.name)d.name=s.name+suf;if(s.type==='radio'||s.type==='checkbox'){d.checked=s.checked;if(s.checked)d.setAttribute('checked','');else d.removeAttribute('checked')}else{d.value=s.value;if(d.tagName==='TEXTAREA')d.textContent=s.value;else d.setAttribute('value',s.value)}});
+  c.querySelectorAll('.del,.deco-ctl,.blk-pick').forEach(x=>x.remove());
+  c.querySelectorAll('[contenteditable]').forEach(x=>x.removeAttribute('contenteditable'));
+  return c;
+}
+function layRoot(){let r=document.getElementById('lay-root');if(!r){r=h('div',{id:'lay-root','aria-hidden':'true'});document.body.append(r)}return r}
+function pageShell(sheet){
+  const p=h('div',{class:'a4page sheet'+(sheet.classList.contains('sol')?' sol':'')+(sheet.classList.contains('nobank')?' nobank':'')});
+  return p;
+}
+async function settle(root){await Promise.all([...root.querySelectorAll('img')].map(i=>i.decode?i.decode().catch(()=>{}):null));if(document.fonts&&document.fonts.ready)await document.fonts.ready}
+
+/* Plant die Seiten: liefert {pages:[{blocks,scale,part}], parts, info} */
+async function planPages(sheet,lay){
+  const root=layRoot();root.innerHTML='';
+  const probe=pageShell(sheet);probe.style.height='auto';root.append(probe);
+  const head=$('.ws-head',sheet),title=$('.ws-title',sheet),intro=$('.ws-intro',sheet),foot=$('.ws-foot',sheet);
+  const blocks=$$('.blk',sheet).filter(b=>!b.classList.contains('off'));
+  const hClone=cloneLive(head),tClone=cloneLive(title),iClone=intro?cloneLive(intro):null,fClone=cloneLive(foot);
+  probe.append(hClone,tClone);if(iClone)probe.append(iClone);
+  const bClones=blocks.map(b=>cloneLive(b));const wrap=h('div',{class:'blks'});bClones.forEach(b=>wrap.append(b));probe.append(wrap,fClone);
+  await settle(probe);
+  const top=probe.getBoundingClientRect().top;
+  const headN=tClone.getBoundingClientRect().bottom-top-PADY;
+  const head1=(iClone?iClone.getBoundingClientRect().bottom:tClone.getBoundingClientRect().bottom)-top-PADY;
+  const footH=fClone.getBoundingClientRect().height+28;
+  const bh=bClones.map((b,i)=>{const r=b.getBoundingClientRect();const prev=i?bClones[i-1].getBoundingClientRect().bottom:(iClone||tClone).getBoundingClientRect().bottom;return r.bottom-prev});
+  root.innerHTML='';
+  const avail=A4H-2*PADY-footH;
+  const total=head1+bh.reduce((a,b)=>a+b,0);
+  const res={blocks,head1,headN,footH,bh,avail,total};
+  if(lay.copies>1){
+    const slot=A4H/lay.copies;const need=total+2*PADY+footH;const sc=Math.min(1,slot/need);
+    res.pages=[{idx:blocks.map((_,i)=>i),scale:sc,part:1}];res.parts=1;res.copyScale=sc;
+    res.info=sc>=0.999?`passt ${lay.copies}× auf eine Seite`:`${lay.copies}× pro Seite, verkleinert auf ${Math.round(sc*100)} %`+(sc<0.6?' – sehr klein, besser „1 A4-Seite“ wählen':'');
+    return res;
+  }
+  if(total<=avail){res.pages=[{idx:blocks.map((_,i)=>i),scale:1,part:1}];res.parts=1;
+    const frac=(total+2*PADY+footH)/A4H;res.info=frac<=0.34?'passt auf 1 Seite – auch 3× pro Seite möglich':frac<=0.5?'passt auf 1 Seite – auch 2× pro Seite möglich':'passt auf 1 A4-Seite';return res}
+  if(lay.shrink&&avail/total>=0.82){const sc=avail/total;res.pages=[{idx:blocks.map((_,i)=>i),scale:sc,part:1}];res.parts=1;res.info=`auf 1 A4-Seite verkleinert (${Math.round(sc*100)} %)`;return res}
+  /* aufteilen */
+  const parts=[];let cur={idx:[],h:head1};
+  bh.forEach((hgt,i)=>{if(cur.idx.length&&cur.h+hgt>avail){parts.push(cur);cur={idx:[],h:headN}}cur.idx.push(i);cur.h+=hgt});parts.push(cur);
+  /* Teile ausgleichen: kleinste Kapazität, die dieselbe Anzahl Teile ergibt */
+  const greedy=cap=>{const ps=[];let c={idx:[],h:head1};bh.forEach((hgt,i)=>{if(c.idx.length&&c.h+hgt>cap){ps.push(c);c={idx:[],h:headN}}c.idx.push(i);c.h+=hgt});ps.push(c);return ps};
+  let lo=total/parts.length,hi=avail;for(let k=0;k<25;k++){const mid=(lo+hi)/2;if(greedy(mid).length<=parts.length)hi=mid;else lo=mid}
+  const bal=greedy(hi);if(bal.length===parts.length){parts.length=0;bal.forEach(p=>parts.push(p))}
+  res.pages=parts.map((p,k)=>({idx:p.idx,scale:Math.min(1,avail/p.h),part:k+1}));res.parts=parts.length;
+  res.info=`wird auf ${parts.length} Arbeitsblätter aufgeteilt (Teil 1–${parts.length}, je 1 A4-Seite)`;
+  return res;
+}
+
+/* Baut die A4-Seiten als DOM */
+function buildPages(sheet,plan,lay){
+  const out=[];
+  const head=$('.ws-head',sheet),title=$('.ws-title',sheet),intro=$('.ws-intro',sheet),foot=$('.ws-foot',sheet);
+  const sheetContent=(pg)=>{
+    const inner=h('div',{class:'a4inner'});
+    const hc=cloneLive(head);if(plan.parts>1){const br=$('.ws-brand',hc);if(br)br.textContent+=` · Teil ${pg.part}/${plan.parts}`}
+    inner.append(hc);const tc=cloneLive(title);if(plan.parts>1)tc.textContent+=` (Teil ${pg.part})`;inner.append(tc);
+    if(pg.part===1&&intro)inner.append(cloneLive(intro));
+    const wrap=h('div',{class:'blks'});pg.idx.forEach((i,n)=>{const b=cloneLive(plan.blocks[i]);const no=$('h3 .no',b);if(no)no.textContent=n+1;wrap.append(b)});inner.append(wrap);
+    inner.append(cloneLive(foot));
+    inner.style.width=((A4W-2*PADX)/pg.scale)+'px';inner.style.transform=`scale(${pg.scale})`;
+    return inner;
+  };
+  if(lay.copies>1){
+    const page=pageShell(sheet);page.classList.add('multi');
+    for(let k=0;k<lay.copies;k++){const slot=h('div',{class:'a4slot',style:`height:${A4H/lay.copies}px`});const pg=plan.pages[0];slot.append(sheetContent(pg));page.append(slot)}
+    out.push(page);return out;
+  }
+  plan.pages.forEach(pg=>{const page=pageShell(sheet);page.append(sheetContent(pg));out.push(page)});
+  return out;
+}
+
+/* Druck: nur die A4-Seiten drucken */
+async function printPages(sheet,lay){
+  const plan=await planPages(sheet,lay);const pages=buildPages(sheet,plan,lay);
+  let pr=document.getElementById('print-root');if(pr)pr.remove();pr=h('div',{id:'print-root'});pages.forEach(p=>pr.append(p));document.body.append(pr);
+  document.body.classList.add('printing-pages');
+  const done=()=>{document.body.classList.remove('printing-pages');pr.remove();window.removeEventListener('afterprint',done)};
+  window.addEventListener('afterprint',done);await settle(pr);window.print();setTimeout(()=>{if(document.body.classList.contains('printing-pages'))done()},60000);
+}
+
+/* Seitenansicht */
+async function showPreview(sheet,lay,actions){
+  const plan=await planPages(sheet,lay);const pages=buildPages(sheet,plan,lay);
+  const m=h('div',{class:'modal pv-modal',onclick:e=>{if(e.target===m)m.remove()}});
+  const strip=h('div',{class:'pv-strip'});pages.forEach((p,i)=>{const fr=h('div',{class:'pv-frame'});fr.append(p);strip.append(h('div',{class:'pv-item'},fr,h('small',{},plan.parts>1?`Arbeitsblatt Teil ${i+1}`:'Seite 1')))});
+  const box=h('div',{class:'pv-box'},h('div',{class:'row',style:'justify-content:space-between'},h('h2',{style:'font-size:1.2rem'},'Seitenansicht (A4)'),h('button',{class:'btn',onclick:()=>m.remove()},'Schließen')),
+    h('p',{style:'margin:4px 0 12px;color:var(--muted)'},plan.info),strip,h('div',{class:'row',style:'margin-top:12px'},...actions.map(a=>h('button',{class:'btn'+(a.pri?' pri':''),html:a.html,onclick:()=>{m.remove();a.fn()}}))));
+  m.append(box);document.body.append(m);
+  const fit=()=>{$$('.pv-frame',strip).forEach(fr=>{const s=Math.min(1,(fr.clientWidth||300)/A4W);fr.style.height=(A4H*s)+'px';fr.firstChild.style.transform=`scale(${s})`})};
+  requestAnimationFrame(fit);
+}
+
+/* PDF aus den geplanten Seiten */
+async function pagesToPdf(sheet,lay){
+  await loadPdfLibs();
+  const plan=await planPages(sheet,lay);const pages=buildPages(sheet,plan,lay);
+  const root=layRoot();root.innerHTML='';pages.forEach(p=>root.append(p));await settle(root);
+  for(const s of [...root.querySelectorAll('svg')].filter(s=>!s.closest('button'))){try{const url=await svgToCanvasUrl(s);const vb=(s.getAttribute('viewBox')||'0 0 1 1').split(/[ ,]+/).map(Number);const img=h('img',{src:url});img.style.cssText=`width:${s.getBoundingClientRect().width||'100%'}px;height:auto;aspect-ratio:${vb[2]}/${vb[3]};display:block;max-width:100%`;s.replaceWith(img)}catch(e){}}
+  root.querySelectorAll('textarea').forEach(t=>{const d=h('div',{style:`min-height:${t.rows*30}px;line-height:30px;white-space:pre-wrap;background:repeating-linear-gradient(transparent 0 29px,#888 29px 30px);color:#2B6C9C;font-weight:700`},t.value);t.replaceWith(d)});
+  await settle(root);
+  const {PDFDocument}=window.PDFLib;const pdf=await PDFDocument.create();
+  for(const p of root.querySelectorAll('.a4page')){
+    const cv=await window.html2canvas(p,{scale:2,backgroundColor:'#ffffff',width:A4W,height:A4H,logging:false,useCORS:true});
+    const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));const img=await pdf.embedJpg(await blob.arrayBuffer());
+    const page=pdf.addPage([595.28,841.89]);page.drawImage(img,{x:0,y:0,width:595.28,height:841.89});
+  }
+  root.innerHTML='';
+  return new Blob([await pdf.save()],{type:'application/pdf'});
+}
+
+/* Word: Teile als eigene Seiten, Mehrfachkopien untereinander */
+async function pagesToDocx(sheet,lay){
+  const plan=await planPages(sheet,lay);
+  const parts=plan.pages.map(pg=>{const ps=h('div',{class:sheet.className.replace(/\b(edit)\b/g,'')});
+    const hc=cloneLive($('.ws-head',sheet));if(plan.parts>1){const br=$('.ws-brand',hc);if(br)br.textContent+=` · Teil ${pg.part}/${plan.parts}`}
+    const tc=cloneLive($('.ws-title',sheet));if(plan.parts>1)tc.textContent+=` (Teil ${pg.part})`;ps.append(hc,tc);
+    const intro=$('.ws-intro',sheet);if(pg.part===1&&intro)ps.append(cloneLive(intro));
+    const live=pg.idx.map(i=>plan.blocks[i]);
+    const wrap=h('div',{class:'blks'});live.forEach((b,n)=>{const c=cloneLive(b);const no=$('h3 .no',c);if(no)no.textContent=n+1;wrap.append(c)});ps.append(wrap,cloneLive($('.ws-foot',sheet)));
+    return ps});
+  const root=layRoot();root.innerHTML='';parts.forEach(p=>root.append(p));
+  try{return await sheetToDocx(parts,lay.copies)}finally{root.innerHTML=''}
 }
 
 /* ===== App: Navigation, Ansichten, QR ===== */
