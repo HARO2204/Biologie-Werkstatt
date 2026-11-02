@@ -599,6 +599,17 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
 .esc-print{display:none}
 @media print{body.esc-printing>*:not(.esc-print){display:none!important}body.esc-printing .esc-print{display:block}
  .esc-pc{break-inside:avoid;border:2px dashed #999;border-radius:12px;padding:16px;margin:0 0 14px;font-size:13pt}}
+
+/* Stundenbild */
+.plan-doc{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px;max-width:980px}
+.plan-doc.editing{outline:3px dashed var(--pollen);outline-offset:3px}
+.plan-doc h2{margin:2px 0 4px}.plan-doc h3{margin:20px 0 8px;font-size:1.08rem}
+.plan-t{width:100%;border-collapse:collapse;font-size:.92rem}
+.plan-t th,.plan-t td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+.plan-t th{background:var(--leaf-soft,#E3F0E6)}.plan-t td:first-child{white-space:nowrap;width:3.5em}.plan-t td:nth-child(2){width:7.5em}.plan-t td:nth-child(4){width:7em}.plan-t td:nth-child(5){width:11em}
+.plan-note{background:var(--bone);border-radius:8px;padding:8px 12px}.plan-note.warn{background:#FCEFD6}
+@media (max-width:640px){.plan-doc{padding:14px}.plan-t{font-size:.8rem}.plan-t td:nth-child(5),.plan-t th:nth-child(5),.plan-t td:nth-child(4),.plan-t th:nth-child(4){display:none}}
+@media print{.plan .hint{display:none}.plan-doc{border:0;padding:0}.plan-t{font-size:10pt}.plan-t tr{break-inside:avoid}.plan-link{color:inherit;text-decoration:none}}
 </style>
 </head>
 <body>
@@ -3730,6 +3741,104 @@ function escapePage(main,id){
   intro();
 }
 
+/* ===== Stundenbilder: Planungsvorschläge je Thema ===== */
+const STUNDEN={
+/* 1. Klasse */
+lebensraum:{z:['Produzenten, Konsumenten und Zersetzer unterscheiden','Nahrungsketten und -netze erstellen und lesen','erklären, wie sich Räuber- und Beutezahlen gegenseitig beeinflussen'],e:'„Wer frisst wen?“-Kette mit Bildkarten: Die Kinder halten Karten (Gras, Hase, Fuchs …) und stellen sich in der richtigen Reihenfolge auf.'},
+bluetenpflanzen:{z:['die Grundorgane einer Blütenpflanze benennen','Blütenteile und ihre Aufgaben kennen','einfache Pflanzenfamilien mit einem Bestimmungsschlüssel erkennen'],e:'Echte Blumen (z. B. Tulpe, Löwenzahn, Raps) mitbringen: Die Kinder vergleichen in Gruppen, was gleich und was verschieden ist.'},
+bestaeubung:{z:['Bestäubung und Befruchtung unterscheiden','den Weg von der Blüte zur Frucht beschreiben','die Bedeutung von Insekten für unsere Nahrung erklären'],e:'Ein Apfel wird aufgeschnitten: „Wie ist dieser Apfel entstanden? Was musste dafür alles passieren?“ – Ideen sammeln.'},
+wirbeltiere:{z:['die fünf Wirbeltierklassen nennen und Merkmale zuordnen','Gemeinsamkeiten im Skelettbau erkennen','Tiere begründet einer Klasse zuordnen'],e:'Tierbilder-Sortierspiel an der Tafel: Die Kinder ordnen Tiere ohne Vorgabe in Gruppen und begründen ihre Wahl.'},
+angepasstheit:{z:['Angepasstheit an Lebensräume an Beispielen beschreiben','Gebisse von Pflanzen-, Fleisch- und Allesfressern unterscheiden','Bedürfnisse von Haustieren kennen und artgerechte Haltung begründen'],e:'Rätselbilder: Füße von Maulwurf, Specht und Ente zeigen – „Wem gehört dieser Fuß, und wofür ist er gebaut?“'},
+selektion:{z:['natürliche Selektion am Beispiel Birkenspanner erklären','künstliche Selektion (Züchtung) an Haustieren und Gemüse beschreiben','Wildform und Zuchtform vergleichen'],e:'Bilder von Wolf und Dackel nebeneinander: „Sind die beiden verwandt? Wie konnte das passieren?“'},
+skelett:{z:['wichtige Knochen und Gelenke benennen','das Gegenspielerprinzip von Muskeln erklären','Regeln für einen gesunden Rücken und Haltung kennen'],e:'Die Kinder ertasten Knochen am eigenen Körper (Schlüsselbein, Elle, Kniescheibe) und bewegen verschiedene Gelenke.'},
+verdauung:{z:['den Weg der Nahrung durch den Körper beschreiben','Aufgaben der Verdauungsorgane kennen','Grundsätze einer ausgewogenen Ernährung (Ernährungspyramide) anwenden'],e:'Ein Stück Brot lange kauen lassen: „Was schmeckt ihr nach einer Minute?“ – der Speichel beginnt schon mit der Verdauung.'},
+fortpflanzung:{z:['körperliche Veränderungen in der Pubertät beschreiben','Fachbegriffe der Geschlechtsorgane sachlich verwenden','Respekt vor den eigenen und fremden Grenzen zeigen'],e:'Anonyme Fragenbox: Jedes Kind schreibt eine Frage zur Pubertät auf einen Zettel. Die Fragen werden in den Stunden aufgegriffen.',s:'Vorher Gesprächsregeln vereinbaren (niemand wird ausgelacht, Persönliches bleibt im Raum). Eltern über das Thema informieren. Wer möchte, darf Fragen auch anonym stellen.'},
+/* 2. Klasse */
+wald:{z:['die Stockwerke des Waldes mit typischen Pflanzen und Tieren beschreiben','Nahrungsbeziehungen und die Rolle der Zersetzer im Wald erklären','Gefährdungen und Schutz des Waldes (Mischwald, Schutzwald) begründen'],e:'Waldkiste: Zapfen, Buchecker, Moos, Laub, Rinde ertasten (Augen zu) – „Woher kommt das?“',x:'Ideal mit einem Lehrausgang in den Wald für den Forscherauftrag.'},
+fotosynthese:{z:['die Wortgleichung der Fotosynthese aufstellen','Bau und Aufgaben der Pflanzenorgane erklären','die Bedeutung der Pflanzen für Sauerstoff und Nahrung begründen'],e:'Frage an die Klasse: „Ein Baum wiegt viele Tonnen. Woher kommt das ganze Holz – aus der Erde?“ Vermutungen sammeln und am Ende auflösen.'},
+zellen:{z:['Bestandteile von Tier- und Pflanzenzelle benennen und vergleichen','ein Mikroskop sachgerecht bedienen','Gesamtvergrößerung berechnen'],e:'Ein Zwiebelstück und ein Foto unter dem Mikroskop am Beamer: „Woraus besteht die Zwiebel wirklich?“'},
+vermehrung:{z:['geschlechtliche und ungeschlechtliche Vermehrung unterscheiden','Beispiele für vegetative Vermehrung nennen','zwittrig, einhäusig und zweihäusig erklären'],e:'Eine Erdbeerpflanze mit Ausläufer oder eine austreibende Kartoffel mitbringen: „Wie entsteht hier eine neue Pflanze – ganz ohne Samen?“'},
+pilze:{z:['den Aufbau eines Pilzes (Myzel, Fruchtkörper, Sporen) beschreiben','Lebensweisen von Pilzen (Zersetzer, Symbiose, Parasit) unterscheiden','Regeln für das sichere Sammeln von Pilzen kennen'],e:'Sporenbild: Am Vortag einen Champignonhut mit den Lamellen nach unten auf Papier legen – das Muster zeigen und rätseln lassen.'},
+mikroben:{z:['nützliche und schädliche Mikroorganismen unterscheiden','Übertragungswege von Krankheitserregern und Hygieneregeln kennen','Verfahren der Lebensmittelhaltbarmachung erklären'],e:'Glitzer-Experiment: Ein Kind hat Glitzer an den Händen und gibt allen die Hand – so verbreiten sich Keime.'},
+wirbellose:{z:['Insekten, Spinnentiere, Krebstiere, Weichtiere und Ringelwürmer unterscheiden','Außenskelett und Häutung erklären','vollständige und unvollständige Verwandlung beschreiben'],e:'Becherlupen-Safari im Schulhof: Kleine Tiere unter Steinen suchen, Beine zählen, wieder freilassen.'},
+sinne:{z:['die Sinnesorgane und ihre Reize zuordnen','den Weg vom Reiz zur Wahrnehmung erklären','Aufbau von Auge und Ohr beschreiben und das Gehör schützen'],e:'Optische Täuschung am Beamer (z. B. Pfeil-Täuschung aus der Simulation): „Kann man seinen Augen trauen?“'},
+bewegung:{z:['das Zusammenspiel von Gehirn, Nerven und Muskeln beschreiben','die Wirkung von Bewegung auf Körper und Gehirn erklären','das eigene Bewegungsverhalten reflektieren'],e:'Jonglier- oder Balance-Challenge: Wer schafft 10 Sekunden auf einem Bein mit geschlossenen Augen? Was passiert im Gehirn?'},
+/* 3. Klasse */
+gewaesser:{z:['die Zonen eines Sees beschreiben','Nahrungsbeziehungen im Gewässer darstellen','Gewässergüte mit Zeigerorganismen bestimmen und Gewässerschutz begründen'],e:'Ein Glas Teich- oder Bachwasser in der Klasse: „Was lebt da alles drin?“ – mit Becherlupe genau hinschauen.',x:'Der Forscherauftrag passt gut zu einem Lehrausgang an einen Bach (Sicherheitsregeln beachten).'},
+wasserleben:{z:['Angepasstheiten von Fischen an das Leben im Wasser erklären','die Funktion der Schwimmblase beschreiben','die Entwicklung der Amphibien (Metamorphose) darstellen'],e:'„Warum ertrinkt ein Fisch nicht, und warum geht er nicht unter?“ – Vermutungen an der Tafel sammeln.'},
+atmung:{z:['den Weg der Atemluft beschreiben','Ein- und Ausatmen mit dem Zwerchfell erklären','Kiemen, Tracheen und Lungen vergleichen'],e:'Alle legen eine Hand auf den Bauch und atmen tief ein und aus: „Was bewegt sich? Warum?“'},
+herz:{z:['Bau und Funktion des Herzens beschreiben','Lungen- und Körperkreislauf unterscheiden','Bestandteile des Blutes und ihre Aufgaben kennen'],e:'Puls am Handgelenk fühlen: „Was spürst du da eigentlich?“ – danach kurz auf der Stelle laufen und noch einmal fühlen.'},
+ausscheidung:{z:['das Zusammenwirken von Atmung, Kreislauf, Verdauung und Ausscheidung erklären','Bau und Aufgabe der Nieren kennen','Gefahren des Rauchens begründen und Nein-sagen üben'],e:'Strohhalm-Versuch: 30 Sekunden durch einen dünnen Strohhalm atmen – so ähnlich fühlt sich eine geschädigte Lunge an.',s:'Beim Thema Rauchen nicht moralisieren – Kinder mit rauchenden Eltern nicht bloßstellen.'},
+gesteine:{z:['die drei Gesteinsgruppen und ihre Entstehung unterscheiden','den Schalenbau der Erde beschreiben','die Entstehung der Alpen durch Plattentektonik erklären'],e:'Steine aus der Umgebung mitbringen lassen: „Wie alt ist dein Stein, und wie ist er entstanden?“'},
+boden:{z:['Bodenschichten beschreiben','die Arbeit der Bodenlebewesen und den Stoffkreislauf erklären','Gefährdungen des Bodens (Versiegelung, Erosion) begründen'],e:'Eine Handvoll Walderde auf ein weißes Tuch: Mit Lupen Bodentiere suchen und zählen.'},
+fossilien:{z:['die Entstehung von Fossilien beschreiben','Arten von Fossilien unterscheiden','die Erdgeschichte zeitlich einordnen'],e:'Ein echtes Fossil oder einen Ammoniten (Bild) herumgeben: „Was ist das? Wie alt könnte es sein?“'},
+kladogramme:{z:['Merkmale von Wirbeltierklassen vergleichen','Verwandtschaft in einem Kladogramm ablesen','ein einfaches Kladogramm selbst zeichnen'],e:'„Ist der Wal ein Fisch?“ – kurze Abstimmung in der Klasse, Begründungen sammeln.'},
+/* 4. Klasse */
+landwirtschaft:{z:['konventionelle und biologische Landwirtschaft vergleichen','Folgen von Monokultur, Dünger und Pestiziden erklären','Kriterien für nachhaltigen Einkauf kennen'],e:'Zwei Äpfel (bio und konventionell) zeigen: „Woran erkennt man den Unterschied – und gibt es überhaupt einen?“'},
+siedlung:{z:['Kulturfolger und ihre Angepasstheit beschreiben','Abbauzeiten von Müll einschätzen','Möglichkeiten zur Müllvermeidung nennen'],e:'Der Inhalt eines (sauberen) Klassenmülleimers wird sortiert: „Was hätte vermieden werden können?“'},
+klima:{z:['den Treibhauseffekt erklären','den Kohlenstoffkreislauf beschreiben','Folgen des Klimawandels in Österreich nennen und Handlungsmöglichkeiten ableiten'],e:'Vorher-nachher-Bilder der Pasterze zeigen: „Was ist hier passiert?“'},
+genetik:{z:['Chromosom, Gen und DNA unterscheiden','die mendelschen Regeln mit Kreuzungsschemata anwenden','dominante und rezessive Merkmale erklären'],e:'Zungenroller-Test in der Klasse: Wer kann die Zunge rollen? Wer hat angewachsene Ohrläppchen? – Merkmale werden vererbt.'},
+immunsystem:{z:['Bakterien und Viren unterscheiden','die Abwehrreaktion des Körpers beschreiben','Wirkung von Impfung und Antibiotika erklären und richtigen Umgang mit Antibiotika kennen'],e:'Rollenspiel: Einige Kinder sind „Erreger“, andere „Fresszellen“ und „Antikörper“ – was passiert beim ersten und beim zweiten Kontakt?'},
+nerven:{z:['Bau und Funktion einer Nervenzelle beschreiben','Reflexe und bewusste Reaktionen unterscheiden','Wirkungsweise von Hormonen erklären'],e:'Lineal-Fangtest: Wie schnell reagierst du? Zentimeter messen und Reaktionszeiten vergleichen.'},
+verhuetung:{z:['den weiblichen Zyklus beschreiben','Verhütungsmethoden sachlich vergleichen','mit Gefühlen und Veränderungen im Zyklus respektvoll umgehen'],e:'Anonyme Fragenbox zu Zyklus und Verhütung – die Fragen werden in den Stunden sachlich beantwortet.',s:'Gesprächsregeln vereinbaren, Eltern informieren, sachliche Sprache verwenden. Beratungsstellen (z. B. First Love Ambulanz) nennen.'},
+identitaet:{z:['Vielfalt von Geschlecht, Identität und Orientierung respektvoll beschreiben','Grenzen erkennen und kommunizieren (Ja-heißt-Ja)','Hilfsangebote kennen'],e:'Stummes Schreibgespräch auf Plakaten: „Respekt heißt für mich …“, „Eine gute Freundschaft …“',s:'Wertschätzende Atmosphäre schaffen, keine Kinder outen oder auf persönliche Erfahrungen ansprechen. Rat auf Draht (147) als anonyme Anlaufstelle nennen.'},
+evolution:{z:['Stationen der Entwicklung des Menschen zeitlich einordnen','Merkmale der Menschwerdung (aufrechter Gang, Gehirn) erklären','Belege für die Evolution nennen'],e:'Schädelbilder von Schimpanse, Homo erectus und Homo sapiens: „Was hat sich verändert?“'}
+};
+const ESC_BY_K={1:'garten',2:'labor',3:'teich',4:'genlabor'};
+
+function planData(t){const S=STUNDEN[t.id]||{z:[],e:'Bilder oder Gegenstände zum Thema zeigen und Vorwissen sammeln.'};
+  const sh=t.sheets||[t.sheet];const L=i=>sh[i]?`Blatt ${'ABCD'[i]} „${sh[i].title}“`:null;
+  const simT=((SIMS[t.sim]||'').toString().match(/simFrame\(host,'([^']+)'/)||[])[1]||'Simulation';
+  const g=(t.games||[]).map(x=>x.title);const q0=t.quiz&&t.quiz[0]?t.quiz[0].q:'';
+  const wer=WERBIN.find(r=>r[0]===t.k&&norm(t.title+' '+(t.words||[]).map(w=>w[0]).join(' ')).includes(norm(r[1])));
+  const ue=[
+   {t:'Einstieg und Grundlagen',rows:[
+    ['10′','Einstieg',S.e,'Plenum',null],
+    ['25′','Erarbeitung',`${L(0)} bearbeiten. Schwächere Kinder arbeiten mit Wörterkasten, schnellere ohne.`,'EA / PA',['blatt',L(0)]],
+    ['10′','Sicherung','Lösungen gemeinsam am Beamer vergleichen („Lösungen“ einblenden), offene Fragen klären.','Plenum',null],
+    ['5′','Abschluss',q0?`Exit-Frage: „${q0}“`:'Kurze Exit-Frage zum Stundeninhalt.','EA',null]]},
+   {t:'Vertiefen und Üben',rows:[
+    ['5′','Wiederholung',wer?`„Wer bin ich?“-Rätsel am Beamer (z. B. ${wer[1]}).`:'Drei Quizfragen zur letzten Stunde am Beamer.','Plenum',wer?['wer','Wer bin ich?']:['quiz','Quiz']],
+    ['15′','Erarbeitung',`Simulation „${simT}“ – zuerst am Beamer vorzeigen, dann selbst ausprobieren und Beobachtungen notieren.`,'Plenum / PA',['sim',simT]],
+    ['20′','Übung',L(1)?`${L(1)} bearbeiten.`:'Übungsaufgaben aus Blatt A wiederholen.','EA / PA',L(1)?['blatt',L(1)]:null],
+    ['10′','Spiel',g.length?`Spiel „${g[0]}“ – an iPads oder am Beamer in zwei Teams.`:'Quiz am iPad.','PA / Teams',['spiel',g[0]||'Spiele']]]},
+   {t:'Forschen und Festigen',rows:[
+    ['5′','Einstieg','Forschungsfrage vorstellen, Vermutungen notieren lassen. Material und Sicherheitsregeln besprechen.','Plenum',null],
+    ['25′','Forschen',L(2)?`${L(2)} in Gruppen durchführen und protokollieren.`:'Vertiefende Aufgaben in Gruppen.','GA',L(2)?['blatt',L(2)]:null],
+    ['10′','Auswertung','Gruppen präsentieren Ergebnisse, Vermutungen werden überprüft.','Plenum',null],
+    ['10′','Festigung','Live-Quiz mit der ganzen Klasse (iPads über QR-Code) oder Millionenshow am Beamer.','Plenum',['live','Live-Quiz']]]}];
+  if(sh[3])ue.push({t:'Zusatzstunde',rows:[['50′','Vertiefung',`${L(3)} – je nach Interesse der Klasse.`,'EA / GA',['blatt',L(3)]]]});
+  const hue=['Kreuzworträtsel oder Wortsuchrätsel zum Thema (am Handy über QR-Code oder ausgedruckt).','Quiz am iPad allein wiederholen.'];
+  return {S,ue,hue}}
+
+function renderPlan(t,host){
+  const key='plan:'+t.id;const box=h('div',{class:'plan'});
+  const tb=h('div',{class:'toolbar'});let editing=false;
+  const doc=h('div',{class:'plan-doc'});
+  const build=()=>{const saved=store.get(key);if(saved){doc.innerHTML=saved;wire();return}
+    const {S,ue,hue}=planData(t);doc.innerHTML='';
+    doc.append(h('div',{class:'plan-head'},h('div',{class:'eyebrow'},`Stundenbild · ${t.k}. Klasse`),h('h2',{},t.title),h('p',{class:'lp'},'Umfang: '+ue.length+' Unterrichtseinheiten à 50 Minuten (Vorschlag – frei anpassbar)')),
+      h('h3',{},'Lernziele – die Schülerinnen und Schüler können …'),h('ul',{},(S.z.length?S.z:['die Grundbegriffe des Themas erklären']).map(z=>h('li',{},z))),
+      ...[S.x?h('p',{class:'plan-note'},'🌳 '+S.x):null,S.s?h('p',{class:'plan-note warn'},'💬 Hinweis: '+S.s):null].filter(Boolean));
+    ue.forEach((u,i)=>{const tbl=h('table',{class:'plan-t'},h('thead',{},h('tr',{},['Zeit','Phase','Ablauf','Sozialform','Material'].map(x=>h('th',{},x)))),
+      h('tbody',{},u.rows.map(r=>h('tr',{},h('td',{},r[0]),h('td',{},h('b',{},r[1])),h('td',{},r[2]),h('td',{},r[3]),h('td',{},r[4]?h('a',{href:'#'+t.id+(r[4][0]==='blatt'?'':r[4][0]==='wer'?'':'-'+r[4][0]),'data-go':r[4][0]==='wer'?'wer-k'+t.k:r[4][0]==='live'?'live-'+t.id:'',class:'plan-link'},r[4][1]):'Tafel / Beamer')))));
+      doc.append(h('h3',{},`${i+1}. Einheit: ${u.t}`),tbl)});
+    doc.append(h('h3',{},'Differenzierung'),h('ul',{},
+      h('li',{},'Wörterkasten ein- oder ausblenden; mit „Aufgaben wählen“ einzelne Aufgaben weglassen.'),
+      h('li',{},'Blatt A für alle, Blatt B zum Üben, Blatt C für schnelle und interessierte Kinder.'),
+      h('li',{},'Kinder mit Deutsch als Zweitsprache: Wörterliste aus dem Kreuzworträtsel als Vokabelhilfe.')),
+      h('h3',{},'Hausübung / Wiederholung'),h('ul',{},hue.map(x=>h('li',{},x))),
+      h('h3',{},'Abschluss des Themenblocks'),h('p',{},`Als Wiederholung vor der Prüfung eignet sich der Escape-Room der ${t.k}. Klasse oder die Millionenshow mit allen Themen der Klasse.`),
+      h('p',{class:'plan-note'},'Eigene Notizen: ______________________________________________'));
+    wire()};
+  const wire=()=>doc.querySelectorAll('a.plan-link').forEach(a=>a.onclick=e=>{if(editing){e.preventDefault();return}const g=a.dataset.go;if(g){e.preventDefault();location.hash=g}});
+  tb.append(h('button',{class:'btn',html:IC.edit+'Bearbeiten',onclick:e=>{editing=!editing;doc.contentEditable=editing;doc.classList.toggle('editing',editing);e.currentTarget.classList.toggle('pri',editing);if(!editing)store.set(key,doc.innerHTML)}}),
+    h('button',{class:'btn',html:IC.reset+'Original',onclick:()=>{store.set(key,'');build()}}),
+    h('button',{class:'btn',html:IC.print+'Drucken / als PDF',onclick:()=>{if(editing){store.set(key,doc.innerHTML)}window.print()}}),
+    h('button',{class:'btn',html:IC.puzzle+'Escape-Room der Klasse',onclick:()=>{location.hash='escape-'+ESC_BY_K[t.k]}}));
+  box.append(tb,h('p',{class:'hint',style:'color:var(--muted);margin:6px 0 12px'},'Planungsvorschlag – mit „Bearbeiten“ kannst du alles direkt ändern; deine Version wird auf diesem Gerät gespeichert.'),doc);host.append(box);build();
+}
+
 /* ===== Word-Export (.docx) der Arbeitsblätter ===== */
 let docxLib=null;
 function loadDocx(){
@@ -4087,7 +4196,7 @@ async function pagesToDocx(sheet,lay){
 /* ===== App: Navigation, Ansichten, QR ===== */
 const PAGES_URL='https://haro2204.github.io/Biologie-Werkstatt/';
 const baseURL=()=>/github\.io$/.test(location.hostname)?location.origin+location.pathname:PAGES_URL;
-const TABS=[['blatt','Arbeitsblatt','sheet'],['sim','Simulation','sim'],['quiz','Quiz','quiz'],['spiel','Spiele','game']];
+const TABS=[['blatt','Arbeitsblatt','sheet'],['sim','Simulation','sim'],['quiz','Quiz','quiz'],['spiel','Spiele','game'],['plan','Stundenbild','edit']];
 const LOGO='<svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 33 C6 18 16 6 34 5 C34 22 24 33 8 33 Z" style="fill:var(--leaf)"/><path d="M8 33 C14 24 20 17 28 11" style="fill:none;stroke:var(--paper);stroke-width:2.2;stroke-linecap:round"/><circle cx="30" cy="30" r="5" style="fill:var(--pollen)"/></svg>';
 const TOOLS=[
  ['Rätsel',[['kreuz','Kreuzworträtsel','puzzle'],['suche','Wortsuchrätsel','puzzle']]],
@@ -4125,7 +4234,7 @@ function route(){
   if(tool==='wer')return werBinIchPage(main,parts[1]);
   if(tool==='escape')return escapePage(main,parts[1]);
   let tab='blatt',id=raw;
-  const m=raw.match(/^(.*)-(sim|quiz|spiel)$/);if(m){id=m[1];tab=m[2]}
+  const m=raw.match(/^(.*)-(sim|quiz|spiel|plan)$/);if(m){id=m[1];tab=m[2]}
   const topic=TOPICS.find(t=>t.id===id);
   if(!topic)return home(main);
   document.title=topic.title+' · Biologie-Werkstatt';
@@ -4139,6 +4248,7 @@ function route(){
   const pane=h('div',{class:'pane'});main.append(tabs,pane);
   if(tab==='blatt')renderSheet(topic,pane);
   else if(tab==='sim')cleanup=SIMS[topic.sim](pane)||null;
+  else if(tab==='plan')renderPlan(topic,pane);
   else if(tab==='quiz'){renderQuiz(topic,pane);pane.append(classGameLinks(topic))}
   else{renderGames(topic,pane);pane.append(classGameLinks(topic))}
 }
