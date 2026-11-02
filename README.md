@@ -14,7 +14,7 @@ Außerdem:
 - **Arbeitsblätter A/B/C** je Thema: Grundlagen, Üben, Forschen (mit Versuchsprotokoll und Zeichenfeld)
 - **Bilderbibliothek** mit naturgetreuen Bildern (von der Lehrkraft mit KI erstellt) zum Verzieren der Arbeitsblätter, plus eigene Bilder hochladen
 - **Rätsel**: Kreuzworträtsel- und Wortsuchrätsel-Generator (Themenwörter oder eigene Wörter)
-- **Klassenspiele**: Live-Quiz (Beamer + iPads mit PIN/QR) und Millionenshow
+- **Klassenspiele**: Live-Quiz (Beamer + iPads mit PIN/QR), Millionenshow, „Wer bin ich?“ und Bio-Escape-Rooms (je Klasse einer, auch als Stationen druckbar)
 
 Jede Seite hat einen **QR-Code**, der direkt zum Thema und Reiter führt.
 

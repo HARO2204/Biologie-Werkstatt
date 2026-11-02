@@ -573,6 +573,32 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
 #own-name{border:1.5px solid var(--line);border-radius:999px;padding:7px 12px;background:var(--paper);min-width:180px;flex:1}
 @media (max-width:600px){.own-row{grid-template-columns:1fr 40px}.own-row input:nth-child(2){grid-column:1}.own-head{display:none}}
 @media print{.own-ed{display:none!important}}
+
+/* Wer bin ich? / Escape-Room */
+.wb-clues{margin:0 0 12px;padding-left:1.4em;font-size:1.08rem;line-height:1.5}
+.wb-clues li{margin:6px 0}.wb-clues li.off{color:var(--muted);font-style:italic}
+.wb.big .wb-clues{font-size:1.5rem}.wb.big h2{font-size:2.2rem}.wb.big .wb-opts .btn{font-size:1.2rem}
+.wb-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.wb-opts .btn{justify-content:center;padding:12px;font-size:1.02rem}
+.wb-in{font:inherit;font-size:1.1rem;padding:10px 12px;border:2px solid var(--line);border-radius:10px;min-width:0;flex:1;max-width:340px;background:var(--paper);color:inherit}
+.esc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;max-width:980px}
+.esc-card{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;font:inherit;color:inherit}
+.esc-card:hover{border-color:var(--leaf)}.esc-card h3{margin:4px 0 6px;font-size:1.2rem}.esc-card p{margin:0;color:var(--muted);font-size:.92rem}
+.esc-clock{font-size:1.4rem;font-variant-numeric:tabular-nums}
+.esc-slots{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
+.esc-slots span{width:52px;height:60px;display:grid;place-items:center;border:3px dashed var(--line);border-radius:10px;font:800 1.9rem var(--f-display);color:var(--muted)}
+.esc-slots span.on{border-style:solid;border-color:var(--leaf);color:var(--leaf);background:var(--leaf-soft,#E3F0E6)}
+.esc-list{display:flex;gap:8px;margin-bottom:12px}
+.esc-p{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--paper);font:700 1.1rem var(--f-body);cursor:pointer;color:inherit}
+.esc-p.cur{border-color:var(--pollen)}.esc-p.done{background:var(--leaf);border-color:var(--leaf);color:#fff}
+.esc-q{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+.esc-seq{min-height:1.5em;margin:6px 0 10px;font-weight:700}
+.esc-win{margin:0 0 10px}
+.esc-end{text-align:center;padding:20px}
+.app.kiosk .esc .keyq{font-size:1.6rem}.app.kiosk .esc-slots span{width:72px;height:84px;font-size:2.6rem}
+.esc-print{display:none}
+@media print{body.esc-printing>*:not(.esc-print){display:none!important}body.esc-printing .esc-print{display:block}
+ .esc-pc{break-inside:avoid;border:2px dashed #999;border-radius:12px;padding:16px;margin:0 0 14px;font-size:13pt}}
 </style>
 </head>
 <body>
@@ -3537,6 +3563,173 @@ function joinPage(main,pin){
 }
 function alertBox(t){const m=h('div',{class:'modal',onclick:()=>m.remove()},h('div',{},h('p',{},t),h('button',{class:'btn pri'},'OK')));document.body.append(m)}
 
+/* ===== Wer bin ich? und Escape-Rooms ===== */
+const WERBIN=[
+/* 1. Klasse */
+[1,'Honigbiene','Biene',['Ich lebe in einem Staat mit Tausenden Geschwistern.','Ich tanze, um den anderen den Weg zum Futter zu zeigen.','An meinen Hinterbeinen sammle ich Pollen in kleinen Körbchen.','Ich habe sechs Beine und einen Stachel.','Ich mache Honig.']],
+[1,'Igel','',['Ich bin ein Säugetier und halte Winterschlaf.','Ich gehe nachts auf die Jagd nach Käfern, Würmern und Schnecken.','Ich habe ein Insektenfresser-Gebiss mit spitzen Zähnen.','Bei Gefahr rolle ich mich zu einer Kugel zusammen.','Auf meinem Rücken trage ich etwa 7000 Stacheln.']],
+[1,'Löwenzahn','Pusteblume',['Meine „Blüte“ ist eigentlich ein Körbchen aus vielen winzigen Blüten.','Ich gehöre zu den Korbblütlern.','Aus meinem Stängel kommt ein weißer Milchsaft.','Meine Samen fliegen mit kleinen Schirmchen davon.','Kinder pusten mich gerne an.']],
+[1,'Maulwurf','',['Ich lebe fast nur unter der Erde.','Ich sehe sehr schlecht, aber ich rieche und taste ausgezeichnet.','Meine Vorderbeine sind breite Grabschaufeln.','Ich fresse Regenwürmer und Insektenlarven.','Meine Erdhügel ärgern manche Gärtner.']],
+[1,'Dünndarm','',['Ich bin ein Teil des Verdauungssystems.','Ich bin etwa 5 Meter lang.','Innen bin ich mit Millionen winziger Zotten ausgekleidet.','Ich liege zwischen Magen und Dickdarm.','Durch meine Wand gelangen die Nährstoffe ins Blut.']],
+[1,'Wolf','',['Ich lebe in einer Familie, dem Rudel.','Ich bin nach langer Zeit wieder nach Österreich zurückgekehrt.','Ich bin ein Raubtier mit großen Fangzähnen.','Ich heule, um mit meinem Rudel in Kontakt zu bleiben.','Ich bin der Vorfahre aller Haushunde.']],
+[1,'Kirsche','Kirschbaum',['Ich bin ein Baum aus der Familie der Rosengewächse.','Im April trage ich weiße Blüten mit fünf Kronblättern.','Bienen bestäuben meine Blüten.','Meine Frucht hat einen harten Kern – ich bin eine Steinfrucht.','Meine roten Früchte hängen oft paarweise.']],
+[1,'Oberschenkelknochen','Oberschenkel',['Ich bin ein Knochen.','Ich bin der längste und stärkste Knochen deines Körpers.','Oben bilde ich mit dem Becken ein Kugelgelenk.','Unten bin ich am Kniegelenk beteiligt.','Ich liege in deinem Oberschenkel.']],
+[1,'Feldhase','Hase',['Ich bin ein Säugetier und lebe auf Feldern und Wiesen.','Meine Jungen kommen mit Fell und offenen Augen zur Welt.','Ich baue keinen Bau, sondern ruhe in einer flachen Mulde.','Ich kann Haken schlagen und bis zu 70 km/h schnell laufen.','Ich habe sehr lange Ohren – und zu Ostern bringe ich angeblich Eier.']],
+/* 2. Klasse */
+[2,'Fliegenpilz','',['Ich bin weder Pflanze noch Tier.','Ich lebe oft mit Birken und Fichten zusammen.','Ich bin giftig.','Ich vermehre mich mit Sporen aus weißen Lamellen.','Mein roter Hut hat weiße Punkte.']],
+[2,'Kellerassel','Assel',['Ich habe 14 Beine.','Ich brauche Feuchtigkeit, sonst trockne ich aus.','Ich bin eigentlich ein Krebs, der an Land lebt.','Ich fresse totes Laub und helfe, Humus zu machen.','Du findest mich unter Steinen und Brettern.']],
+[2,'Regenwurm','',['Ich habe keine Beine und keine Augen.','Mein Körper besteht aus über 100 Ringen.','Ich atme durch meine feuchte Haut.','Ich fresse Erde und lockere den Boden.','Nach starkem Regen komme ich an die Oberfläche.']],
+[2,'Chloroplast','Blattgrünkorn',['Ich bin ein winziger Teil einer Zelle.','Nur Pflanzenzellen haben mich.','Ich bin grün, weil ich Chlorophyll enthalte.','In mir entstehen Traubenzucker und Sauerstoff.','Ich bin der Ort der Fotosynthese.']],
+[2,'Hefe','Germ',['Ich bin ein Einzeller, aber kein Bakterium.','Ich bin ein Pilz.','Ich vermehre mich durch Sprossung.','Ich verwandle Zucker in Kohlenstoffdioxid – dadurch entstehen Bläschen.','Bäckerinnen und Bäcker brauchen mich für den Germteig.']],
+[2,'Buche','Rotbuche',['Ich bin der häufigste Laubbaum Österreichs.','Meine Rinde ist glatt und grau.','Unter meinem dichten Blätterdach ist es im Sommer dunkel.','Eichhörnchen und Wildschweine fressen meine Früchte.','Meine Früchte heißen nach mir: Bucheckern.']],
+[2,'Kleinhirn','',['Ich bin ein Teil des Gehirns.','Ich liege hinten, unter dem Großhirn.','Ich arbeite meistens unbewusst.','Ich stimme Bewegungen fein aufeinander ab.','Ohne mich würdest du beim Radfahren umfallen.']],
+[2,'Netzhaut','',['Ich bin ein Teil eines Sinnesorgans.','Ich liege ganz hinten im Auge.','In mir gibt es Millionen Sinneszellen für Licht und Farben.','An einer Stelle habe ich keine Sinneszellen – dort ist der blinde Fleck.','Auf mich wirft die Linse das Bild.']],
+[2,'Erdbeere','',['Ich gehöre zu den Rosengewächsen.','Meine Blüten sind weiß mit gelber Mitte.','Die kleinen gelben „Kerne“ auf mir sind eigentlich die echten Früchte.','Ich vermehre mich mit Ausläufern.','Im Juni bin ich rot und süß.']],
+/* 3. Klasse */
+[3,'Bachforelle','Forelle',['Ich lebe in kalten, sauberen Bächen.','Ich brauche viel Sauerstoff im Wasser.','Ich habe eine kleine Fettflosse ohne Flossenstrahlen.','Ich atme mit Kiemen.','Auf meinen Seiten habe ich rote Punkte mit hellem Rand.']],
+[3,'Grasfrosch','Frosch',['Ich bin ein Amphib.','Im Frühling lege ich Laichballen in Teiche.','Als Kind hatte ich Kiemen und einen Schwanz.','Ich fange Insekten mit meiner klebrigen Zunge.','Ich bin braun und einer der häufigsten Frösche Österreichs.']],
+[3,'Herz','',['Ich bin ein Hohlmuskel.','Ich bin etwa so groß wie deine Faust.','Ich habe vier Räume und vier Klappen.','Ich schlage rund 100 000-mal am Tag.','Ich pumpe dein Blut durch den ganzen Körper.']],
+[3,'Zwerchfell','',['Ich bin ein Muskel.','Ich trenne Brustraum und Bauchraum.','Ich bin gewölbt wie eine Kuppel.','Wenn ich mich zusammenziehe, strömt Luft in die Lunge.','Wenn ich zucke, hast du Schluckauf.']],
+[3,'Niere','Nieren',['Ich bin ein Organ – und du hast mich zweimal.','Ich bin bohnenförmig.','Ich filtere jeden Tag rund 1500 Liter Blut.','Ich bilde den Harn.','Ich liege links und rechts der Wirbelsäule im Rücken.']],
+[3,'Ammonit','',['Ich bin vor 66 Millionen Jahren ausgestorben.','Ich lebte im Meer und war mit dem Tintenfisch verwandt.','Meine Schale hatte viele Kammern.','Man findet mich oft in den Kalkalpen.','Meine Schale ist spiralig aufgerollt – ich bin ein beliebtes Fossil.']],
+[3,'Granit','',['Ich bin ein Gestein.','Ich entstand aus Magma tief in der Erde.','Ich bin sehr hart.','In mir sieht man Feldspat, Quarz und Glimmer.','Ich bin gesprenkelt – und im Mühlviertel und Waldviertel sehr häufig.']],
+[3,'Seerose','',['Ich bin eine Pflanze.','Ich wachse in stehenden Gewässern.','Meine Wurzeln stecken bis zu drei Meter tief im Schlamm.','Meine Spaltöffnungen liegen auf der Blattoberseite.','Meine großen runden Blätter schwimmen auf dem Wasser.']],
+[3,'Rotes Blutkörperchen','Rote Blutkörperchen/Erythrozyt',['Ich bin eine Zelle ohne Zellkern.','Ich bin scheibenförmig und in der Mitte eingedellt.','Ich lebe etwa 120 Tage.','Es gibt mich in deinem Körper rund 25 Billionen Mal.','Mit Hämoglobin transportiere ich Sauerstoff.']],
+/* 4. Klasse */
+[4,'DNA','DNS/Erbsubstanz',['Ich bin ein sehr langes Molekül.','Ich sehe aus wie eine verdrehte Strickleiter.','Ich stecke im Zellkern fast jeder Zelle.','In mir sind die Erbanlagen gespeichert.','Meine Abkürzung hat drei Buchstaben.']],
+[4,'Virus','Viren',['Ich bin viel kleiner als ein Bakterium.','Ich habe keinen eigenen Stoffwechsel.','Ich kann mich nur in fremden Zellen vermehren.','Antibiotika können mir nichts anhaben.','Ich verursache Schnupfen, Grippe und Masern.']],
+[4,'Antikörper','',['Ich bin ein Eiweißstoff im Blut.','Bestimmte weiße Blutkörperchen bilden mich.','Ich passe zu einem Erreger wie ein Schlüssel zum Schloss.','Ich verklebe Krankheitserreger, damit Fresszellen sie finden.','Nach einer Impfung bildet dein Körper mich.']],
+[4,'Rückenmark','',['Ich bin ein Teil des Nervensystems.','Ich liege geschützt im Wirbelkanal.','Ich leite Signale zwischen Gehirn und Körper.','Bei Reflexen schalte ich ganz schnell selbst um.','Werde ich verletzt, kann ein Mensch gelähmt sein.']],
+[4,'Kohlenstoffdioxid','CO2/Kohlendioxid',['Ich bin ein unsichtbares Gas.','Pflanzen nehmen mich bei der Fotosynthese auf.','Du atmest mich aus.','Ich entstehe beim Verbrennen von Kohle, Erdöl und Gas.','Ich bin das wichtigste vom Menschen verursachte Treibhausgas.']],
+[4,'Charles Darwin','Darwin',['Ich war ein Naturforscher aus England.','Ich reiste fünf Jahre mit dem Schiff „Beagle“ um die Welt.','Auf den Galapagosinseln beobachtete ich Finken mit verschiedenen Schnäbeln.','Ich erklärte die Evolution durch natürliche Selektion.','Mein berühmtes Buch „Über die Entstehung der Arten“ erschien 1859.']],
+[4,'Gregor Mendel','Mendel',['Ich lebte als Mönch in einem Kloster in Brünn.','Ich wurde 1822 im damaligen Österreich geboren.','In meinem Klostergarten kreuzte ich tausende Erbsenpflanzen.','Ich entdeckte die Regeln der Vererbung.','Man nennt mich den Vater der Genetik.']],
+[4,'Hausschwein','Schwein',['Ich bin ein Haustier.','Meine wilden Vorfahren leben heute noch in Österreichs Wäldern.','Der Mensch hat mich so gezüchtet, dass ich schnell wachse.','Ich bin ein Allesfresser und sehr klug.','Ich habe einen Rüssel und einen geringelten Schwanz.']],
+[4,'Gletscher','',['Ich bin weder Pflanze noch Tier.','Ich bewege mich – aber sehr langsam.','Die Pasterze am Großglockner ist der größte von uns in Österreich.','Durch den Klimawandel werde ich jedes Jahr kürzer.','Ich bestehe aus Eis, das aus Schnee entstanden ist.']]
+];
+
+function werBinIchPage(main,src){
+  src=src||'alle';document.title='Wer bin ich? · Biologie-Werkstatt';
+  put(main,h('header',{class:'t-head'},h('div',{class:'eyebrow'},'Klassenspiel'),h('h1',{},'Wer bin ich?'),h('p',{class:'lp'},'Ein Lebewesen, ein Organ oder ein Forscher beschreibt sich selbst – mit jedem Hinweis wird es leichter. Je früher du es errätst, desto mehr Punkte bekommst du. Allein am iPad oder mit der ganzen Klasse am Beamer.')));
+  const pool=()=>WERBIN.filter(r=>src==='alle'||'k'+r[0]===src);
+  const area=h('div');put(main,area);
+  const setup=()=>{area.innerHTML='';
+    const sel=h('select',{onchange:e=>{location.hash='wer-'+e.target.value}},h('option',{value:'alle',selected:src==='alle'},'Alle Klassen'),...[1,2,3,4].map(k=>h('option',{value:'k'+k,selected:src==='k'+k},k+'. Klasse')));
+    let mode='tipp';const modeSel=h('select',{onchange:e=>mode=e.target.value},h('option',{value:'tipp'},'Antwort auswählen (4 Möglichkeiten)'),h('option',{value:'frei'},'Antwort eintippen (schwerer)'),h('option',{value:'beamer'},'Beamer: Klasse rät laut, Lehrkraft deckt auf'));
+    const nSel=h('select',{},...[5,8,10].map(n=>h('option',{value:n,selected:n===8},n+' Rätsel')));
+    put(area,h('div',{class:'pz-ctl'},h('label',{},'Rätsel aus',sel),h('label',{},'Spielart',modeSel),h('label',{},'Anzahl',nSel)),
+      h('div',{class:'toolbar',style:'margin-top:12px'},h('button',{class:'btn pri',onclick:()=>play(mode,+nSel.value)},'Spiel starten'),h('button',{class:'btn',html:IC.qr+'QR-Code',onclick:()=>qrURL('wer-'+src,'Jedes Kind spielt allein auf seinem iPad.')})),
+      h('p',{class:'hint',style:'color:var(--muted)'},`${pool().length} Rätsel verfügbar. Punkte: 5 beim ersten Hinweis, 4 beim zweiten … 1 beim letzten. Ein falscher Tipp deckt den nächsten Hinweis auf.`))};
+  const play=(mode,n)=>{const rs=shuffle(pool()).slice(0,n);let i=0,score=0,shown,done;
+    if(mode==='beamer')document.querySelector('.app').classList.add('kiosk');
+    const box=h('div',{class:'play wb'+(mode==='beamer'?' big':''),style:'max-width:860px'});area.innerHTML='';area.append(box);
+    const next=()=>{if(i>=rs.length)return end();shown=1;done=false;draw()};
+    const ok=v=>{const r=rs[i];return [r[1],...(r[2]?r[2].split('/'):[])].some(a=>norm(a)===norm(v))};
+    const solve=good=>{done=true;const pts=good?6-shown:0;score+=pts;shown=5;draw(good?`Richtig! +${pts} Punkte`:'Leider nicht erraten.')};
+    const draw=msg=>{const r=rs[i];box.innerHTML='';
+      box.append(h('div',{class:'row',style:'justify-content:space-between'},h('div',{class:'eyebrow'},`Rätsel ${i+1} von ${rs.length} · ${r[0]}. Klasse`),h('b',{},`Punkte: ${score}`)),
+        h('h2',{style:'margin:6px 0 10px'},done?r[1]:'Wer bin ich?'));
+      const ol=h('ol',{class:'wb-clues'});r[3].forEach((c,k)=>ol.append(h('li',{class:k<shown?'on':'off'},k<shown?c:`Hinweis ${k+1} – noch verdeckt (${5-k} Punkte)`)));box.append(ol);
+      if(msg)box.append(h('div',{class:'info',style:'margin:10px 0'},h('b',{},msg)));
+      if(done){box.append(h('button',{class:'btn pri',onclick:()=>{i++;next()}},i+1<rs.length?'Nächstes Rätsel':'Zum Ergebnis'));return}
+      const wrong=()=>{if(shown<5){shown++;draw('Nicht ganz – hier ist der nächste Hinweis.')}else solve(false)};
+      if(mode==='tipp'){if(!r.opts){const others=shuffle(WERBIN.filter(x=>x!==r&&(x[0]===r[0]))).slice(0,3).map(x=>x[1]);r.opts=shuffle([r[1],...others])}
+        box.append(h('div',{class:'wb-opts'},r.opts.map(o=>h('button',{class:'btn',onclick:()=>o===r[1]?solve(true):wrong()},o))))}
+      else if(mode==='frei'){const inp=h('input',{type:'text',placeholder:'Deine Antwort …',class:'wb-in',autocomplete:'off'});const go_=()=>{if(!inp.value.trim())return;ok(inp.value)?solve(true):wrong()};inp.onkeydown=e=>{if(e.key==='Enter')go_()};
+        box.append(h('div',{class:'row'},inp,h('button',{class:'btn pri',onclick:go_},'Raten')));setTimeout(()=>inp.focus(),30)}
+      else box.append(h('div',{class:'row'},h('button',{class:'btn pri',onclick:()=>solve(true)},'Klasse hat es erraten'),shown<5?h('button',{class:'btn',onclick:()=>{shown++;draw()}},'Nächster Hinweis'):null,h('button',{class:'btn',onclick:()=>solve(false)},'Auflösen')));
+      if(mode!=='beamer'&&shown<5)box.append(h('button',{class:'btn',style:'margin-top:10px',onclick:()=>{shown++;draw()}},'Weiteren Hinweis zeigen (−1 Punkt)'))};
+    const end=()=>{const max=rs.length*5;box.innerHTML='';box.append(h('div',{class:'eyebrow'},'Ergebnis'),h('h2',{style:'font-size:2.2rem;margin:4px 0'},`${score} von ${max} Punkten`),
+      h('p',{},score>=max*.7?'🏆 Großartig – du bist ein echter Bio-Profi!':score>=max*.4?'👍 Gut gemacht! Beim nächsten Mal schaffst du noch mehr.':'🌱 Jeder Profi hat klein angefangen. Probier es gleich noch einmal!'),
+      h('div',{class:'row'},h('button',{class:'btn pri',onclick:()=>play(mode,n)},'Nochmal spielen'),h('button',{class:'btn',onclick:()=>{document.querySelector('.app').classList.remove('kiosk');setup()}},'Einstellungen')))};
+    next()};
+  setup();
+}
+
+/* ---------- Escape-Rooms ---------- */
+const ESCAPES=[
+{id:'garten',k:1,title:'Das Geheimnis im Schulgarten',code:'SAMEN',story:'Der Hausmeister hat das Gartenhaus abgesperrt – und darin liegen die Samen für unser Frühlingsbeet! Er hat einen Zettel hinterlassen: „Wer fünf Bio-Rätsel löst, bekommt das Codewort.“ Jedes gelöste Rätsel verrät euch einen Buchstaben.',end:'Das Gartenhaus ist offen! Aus Samen wachsen neue Pflanzen – genau wie im Frühlingsbeet.',
+ p:[{t:'mc',q:'Rätsel am Apfelbaum: Wer bringt den Blütenstaub von Blüte zu Blüte, damit Äpfel wachsen können?',o:['Honigbiene','Regenwurm','Maulwurf','Weinbergschnecke'],a:0,hint:'Das Tier fliegt und macht etwas Süßes.',pos:2},
+  {t:'num',q:'Rätsel am Teich: Ein Grasfrosch legt 1000 Eier. Nur jedes hundertste wird ein erwachsener Frosch. Wie viele Frösche sind das?',a:10,hint:'Rechne 1000 : 100.',pos:5},
+  {t:'order',q:'Rätsel in der Küche: Bring den Weg der Nahrung in die richtige Reihenfolge.',o:['Mund','Speiseröhre','Magen','Dünndarm','Dickdarm'],hint:'Der Dünndarm ist der lange Teil, der Dickdarm kommt am Schluss.',pos:1},
+  {t:'text',q:'Rätsel beim Zahnarzt-Plakat: Ich bin der härteste Stoff in deinem Körper und überziehe deine Zähne. Wer bin ich?',a:'Zahnschmelz/Schmelz',hint:'Das Wort beginnt mit „Zahn…“.',pos:4},
+  {t:'mc',q:'Rätsel im Tierbuch: Welches Tier ist KEIN Säugetier?',o:['Pinguin','Fledermaus','Wal','Igel'],a:0,hint:'Säugetiere haben Haare und säugen ihre Jungen. Wer hat Federn?',pos:3}]},
+{id:'labor',k:2,title:'Professor Myzels verschlossenes Labor',code:'SPORE',story:'Professor Myzel, der berühmte Pilzforscher, hat sich aus seinem eigenen Labor ausgesperrt! Der Türcode ist in fünf Rätseln versteckt. Löst sie, bevor seine Pilzkulturen vertrocknen!',end:'Die Labortür springt auf! Pilze vermehren sich mit winzigen Sporen – deshalb hat Professor Myzel dieses Codewort gewählt.',
+ p:[{t:'num',q:'Rätsel am Mikroskop: Okular 10-fach, Objektiv 40-fach. Wie stark ist die Gesamtvergrößerung?',a:400,hint:'Multipliziere die beiden Zahlen.',pos:3},
+  {t:'mc',q:'Rätsel an der Zellwand-Tafel: Welcher Bestandteil fehlt der Tierzelle?',o:['Zellwand','Zellkern','Zellmembran','Zellplasma'],a:0,hint:'Er gibt der Pflanzenzelle eine feste Form.',pos:1},
+  {t:'num',q:'Rätsel an der Petrischale: Ein Bakterium teilt sich alle 20 Minuten. Wie viele Bakterien sind es nach einer Stunde?',a:8,hint:'Nach 20 min: 2, nach 40 min: 4 …',pos:5},
+  {t:'order',q:'Rätsel im Schmetterlingskasten: Bring die Entwicklung in die richtige Reihenfolge.',o:['Ei','Raupe','Puppe','Schmetterling'],hint:'In der Puppe wird der Körper umgebaut.',pos:2},
+  {t:'text',q:'Rätsel im Waldboden-Terrarium: Ich bin das unsichtbare Pilzgeflecht im Boden und der eigentliche Pilz. Wer bin ich?',a:'Myzel/Pilzgeflecht',hint:'Der Professor trägt denselben Namen!',pos:4}]},
+{id:'teich',k:3,title:'Rette den Schulteich!',code:'LUNGE',story:'Alarm! Der Schulteich droht umzukippen. Die Pumpe, die frischen Sauerstoff ins Wasser bringt, ist mit einem Code gesichert. Nur wer sich mit Wasser, Atmung und Kreislauf auskennt, kann sie einschalten!',end:'Die Pumpe läuft – der Teich bekommt wieder Sauerstoff! Übrigens: Auch du brauchst Sauerstoff. Deine Lunge holt ihn mit jedem Atemzug.',
+ p:[{t:'order',q:'Rätsel am Ufer: Ordne die Zonen vom Land zum Wasser.',o:['Bruchwaldzone','Röhrichtzone','Schwimmblattzone','Tauchblattzone','Freiwasserzone'],hint:'Die Seerosen schwimmen, die Wasserpest ist ganz untergetaucht.',pos:1},
+  {t:'mc',q:'Rätsel mit dem Kescher: Ihr findet viele Steinfliegenlarven. Wie ist das Wasser?',o:['sehr sauber','stark verschmutzt','salzig','giftig'],a:0,hint:'Steinfliegenlarven brauchen sehr viel Sauerstoff.',pos:4},
+  {t:'num',q:'Rätsel am Puls: Du zählst 18 Herzschläge in 15 Sekunden. Wie viele Schläge pro Minute sind das?',a:72,hint:'Eine Minute hat 4 × 15 Sekunden.',pos:2},
+  {t:'text',q:'Rätsel am Herzmodell: Durch mich fließt das Blut vom Herzen weg. Welches Blutgefäß bin ich?',a:'Arterie/Arterien/Schlagader/Schlagadern',hint:'Das Gegenteil ist die Vene.',pos:5},
+  {t:'mc',q:'Rätsel im Aquarium: Womit atmet eine junge Kaulquappe?',o:['mit Kiemen','mit der Lunge','mit Tracheen','gar nicht'],a:0,hint:'Sie lebt nur im Wasser – wie ein Fisch.',pos:3}]},
+{id:'genlabor',k:4,title:'Alarm im Genlabor',code:'GENOM',story:'Der Computer des Genlabors ist gesperrt – und darauf liegen die Ergebnisse eines wichtigen Forschungsprojekts! Das Passwort ist ein biologischer Fachbegriff. Fünf Rätsel aus Genetik, Immunsystem, Nerven und Klima führen euch zum Ziel.',end:'Zugang gewährt! Das Genom ist die Gesamtheit aller Erbinformationen eines Lebewesens.',
+ p:[{t:'num',q:'Rätsel am Chromosomenbild: Wie viele Chromosomen hat eine menschliche Körperzelle?',a:46,hint:'23 Paare.',pos:1},
+  {t:'mc',q:'Rätsel im Medizinschrank: Was wirkt gegen Bakterien, aber NICHT gegen Viren?',o:['Antibiotika','Impfung','Händewaschen','Ausreichend Schlaf'],a:0,hint:'Der Name bedeutet „gegen das Leben (der Bakterien)“.',pos:3},
+  {t:'order',q:'Rätsel an der heißen Herdplatte: Bring den Reflexbogen in die richtige Reihenfolge.',o:['Hitze-Reiz an der Haut','Sinneszellen werden erregt','Signal läuft zum Rückenmark','Signal läuft zum Armmuskel','Hand wird zurückgezogen'],hint:'Beim Reflex muss das Signal gar nicht bis zum Gehirn.',pos:2},
+  {t:'text',q:'Rätsel am Klimadiagramm: Ich bin das wichtigste Treibhausgas, das beim Verbrennen von Kohle, Erdöl und Gas entsteht. Wie heiße ich?',a:'Kohlenstoffdioxid/CO2/Kohlendioxid',hint:'Du atmest es auch aus.',pos:4},
+  {t:'num',q:'Rätsel am Kreuzungsschema: Zwei mischerbige Eltern (Aa × Aa). Wie viele von 4 Nachkommen zeigen im Durchschnitt das rezessive Merkmal (aa)?',a:1,hint:'Zeichne ein Kreuzungsquadrat mit 4 Feldern.',pos:5}]}
+];
+
+function escapePage(main,id){
+  document.title='Escape-Room · Biologie-Werkstatt';
+  put(main,h('header',{class:'t-head'},h('div',{class:'eyebrow'},'Klassenspiel'),h('h1',{},'Bio-Escape-Room'),h('p',{class:'lp'},'Löst gemeinsam fünf Rätsel. Jedes gelöste Rätsel verrät einen Buchstaben des Codeworts. Am Beamer mit der Gruppe, am iPad in Teams – oder ausgedruckt als Stationen im Klassenzimmer.')));
+  const area=h('div');put(main,area);let timer=null;cleanup=()=>clearInterval(timer);
+  const pick=()=>{clearInterval(timer);document.querySelector('.app').classList.remove('kiosk');area.innerHTML='';
+    const g=h('div',{class:'esc-grid'});ESCAPES.forEach(r=>g.append(h('button',{class:'esc-card',onclick:()=>{location.hash='escape-'+r.id}},h('div',{class:'eyebrow'},r.k+'. Klasse'),h('h3',{},r.title),h('p',{},r.story.split('!')[0]+'!'))));put(area,g)};
+  const room=ESCAPES.find(r=>r.id===id);if(!room)return pick();
+  const intro=()=>{area.innerHTML='';const tSel=h('select',{},...[[0,'ohne Zeitlimit'],[10,'10 Minuten'],[15,'15 Minuten'],[20,'20 Minuten'],[30,'30 Minuten']].map(([v,n])=>h('option',{value:v,selected:v===15},n)));
+    put(area,h('div',{class:'play esc',style:'max-width:860px'},h('div',{class:'eyebrow'},room.k+'. Klasse'),h('h2',{},room.title),h('p',{style:'font-size:1.1rem'},room.story),
+      h('div',{class:'pz-ctl'},h('label',{},'Zeit',tSel)),
+      h('div',{class:'toolbar',style:'margin-top:12px'},h('button',{class:'btn pri',onclick:()=>start(+tSel.value)},'🔓 Escape-Room starten'),h('button',{class:'btn',onclick:()=>{document.querySelector('.app').classList.add('kiosk');start(+tSel.value)}},'Am Beamer starten'),
+        h('button',{class:'btn',html:IC.print+'Stationen drucken',onclick:printCards}),h('button',{class:'btn',html:IC.qr+'QR-Code',onclick:()=>qrURL('escape-'+room.id,'Jedes Team spielt auf einem iPad.')}),h('button',{class:'btn',onclick:pick},'Anderer Raum')),
+      h('p',{class:'hint',style:'color:var(--muted)'},'Tipp: Jeder Hinweis kostet eine Minute (bei Zeitlimit). Für die Stationen-Variante liegen die gedruckten Karten im Raum verteilt; die Lösungsbuchstaben stehen auf einem eigenen Lehrkraft-Blatt.')))};
+  const start=mins=>{let left=mins*60,solved=new Set(),hints=0,t0=Date.now();const letters=Array(room.code.length).fill(null);
+    const box=h('div',{class:'play esc',style:'max-width:900px'});area.innerHTML='';area.append(box);
+    const clock=h('b',{class:'esc-clock'});const tick=()=>{if(!mins){const s=Math.floor((Date.now()-t0)/1000);clock.textContent=`⏱ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;return}
+      clock.textContent=`⏳ ${Math.floor(Math.max(0,left)/60)}:${String(Math.max(0,left)%60).padStart(2,'0')}`;clock.style.color=left<60?'var(--berry)':'';if(left<=0){clearInterval(timer);lost()}left--};
+    timer=setInterval(tick,1000);tick();
+    const slots=()=>h('div',{class:'esc-slots'},letters.map(l=>h('span',{class:l?'on':''},l||'?')));
+    const draw=(cur)=>{box.innerHTML='';
+      box.append(h('div',{class:'row',style:'justify-content:space-between'},h('h2',{style:'margin:0'},room.title),clock),slots());
+      const list=h('div',{class:'esc-list'});room.p.forEach((p,k)=>list.append(h('button',{class:'esc-p'+(solved.has(k)?' done':'')+(k===cur?' cur':''),onclick:()=>draw(k)},solved.has(k)?'✔':String(k+1))));box.append(list);
+      if(cur==null){box.append(solved.size===room.p.length?finalBox():h('p',{style:'font-size:1.1rem'},'Wählt ein Rätsel aus. Ihr könnt die Reihenfolge selbst bestimmen.'));return}
+      const p=room.p[cur];const fb=h('div');
+      const success=()=>{solved.add(cur);letters[p.pos-1]=room.code[p.pos-1];const nxt=room.p.findIndex((_,k)=>!solved.has(k));draw(nxt<0?null:nxt);box.insertBefore(h('div',{class:'info esc-win'},`✔ Richtig! Buchstabe Nr. ${p.pos} ist „${room.code[p.pos-1]}“.`),box.children[2])};
+      const fail=()=>{fb.innerHTML='';fb.append(h('div',{class:'info',style:'background:var(--berry-soft,#F7E1EA)'},'❌ Das stimmt leider noch nicht. Versucht es noch einmal!'))};
+      const card=h('div',{class:'esc-q'},h('div',{class:'eyebrow'},`Rätsel ${cur+1}`),h('p',{class:'keyq'},p.q));
+      if(solved.has(cur)){card.append(h('p',{},'✔ Schon gelöst.'));box.append(card);return}
+      if(p.t==='mc')card.append(h('div',{class:'wb-opts'},(p.sh=p.sh||shuffle(p.o.map((o,i)=>[o,i]))).map(([o,i])=>h('button',{class:'btn',onclick:()=>i===p.a?success():fail()},o))));
+      else if(p.t==='num'||p.t==='text'){const inp=h('input',{type:p.t==='num'?'number':'text',class:'wb-in',placeholder:p.t==='num'?'Zahl':'Antwort'});
+        const chk=()=>{const v=inp.value.trim();if(!v)return;const ok=p.t==='num'?+v.replace(',','.')===p.a:p.a.split('/').some(a=>norm(a)===norm(v));ok?success():fail()};
+        inp.onkeydown=e=>{if(e.key==='Enter')chk()};card.append(h('div',{class:'row'},inp,h('button',{class:'btn pri',onclick:chk},'Prüfen')));setTimeout(()=>inp.focus(),30)}
+      else{const sh=p.sh=p.sh||(()=>{let s;do s=shuffle(p.o.slice());while(s.join()===p.o.join());return s})();let picked=[];
+        const pool=h('div',{class:'wb-opts'}),seq=h('ol',{class:'esc-seq'});
+        const ren=()=>{pool.innerHTML='';seq.innerHTML='';sh.forEach(o=>{if(!picked.includes(o))pool.append(h('button',{class:'btn',onclick:()=>{picked.push(o);ren();if(picked.length===p.o.length)(picked.join()===p.o.join()?success:()=>{fail();picked=[];ren()})()}},o))});picked.forEach(o=>seq.append(h('li',{},o)))};
+        card.append(h('p',{class:'hint'},'Tippe die Begriffe in der richtigen Reihenfolge an.'),seq,pool,h('button',{class:'btn',style:'margin-top:8px',onclick:()=>{picked=[];ren()}},'Von vorne'));ren()}
+      card.append(h('button',{class:'btn',style:'margin-top:10px',onclick:e=>{hints++;if(mins)left-=60;e.target.replaceWith(h('div',{class:'info'},'💡 '+p.hint))}},'💡 Hinweis'+(mins?' (−1 Minute)':'')),fb);
+      box.append(card)};
+    const finalBox=()=>{const inp=h('input',{type:'text',class:'wb-in',placeholder:'Codewort',maxlength:12,style:'text-transform:uppercase;letter-spacing:.2em'});const fb=h('div');
+      const chk=()=>{if(norm(inp.value)===norm(room.code))won();else{fb.innerHTML='';fb.append(h('div',{class:'info'},'🔒 Das Schloss bleibt zu. Lest die Buchstaben noch einmal genau!'))}};inp.onkeydown=e=>{if(e.key==='Enter')chk()};
+      return h('div',{class:'esc-q'},h('div',{class:'eyebrow'},'Das Schloss'),h('p',{class:'keyq'},'Alle Rätsel gelöst! Gebt jetzt das Codewort ein.'),h('div',{class:'row'},inp,h('button',{class:'btn pri',onclick:chk},'🔓 Öffnen')),fb)};
+    const won=()=>{clearInterval(timer);const s=Math.round((Date.now()-t0)/1000);box.innerHTML='';
+      box.append(h('div',{class:'esc-end'},h('div',{style:'font-size:4rem'},'🔓'),h('h2',{},'Geschafft!'),h('p',{style:'font-size:1.15rem'},room.end),
+        h('p',{},`Zeit: ${Math.floor(s/60)} min ${s%60} s · Hinweise: ${hints}`),h('div',{class:'row',style:'justify-content:center'},h('button',{class:'btn pri',onclick:intro},'Nochmal spielen'),h('button',{class:'btn',onclick:pick},'Anderer Escape-Room'))))};
+    const lost=()=>{box.innerHTML='';box.append(h('div',{class:'esc-end'},h('div',{style:'font-size:4rem'},'⏰'),h('h2',{},'Die Zeit ist abgelaufen!'),h('p',{},`Ihr habt ${solved.size} von ${room.p.length} Rätseln gelöst. Das Codewort war „${room.code}“.`),
+      h('div',{class:'row',style:'justify-content:center'},h('button',{class:'btn pri',onclick:intro},'Nochmal versuchen'))))};
+    draw(0)};
+  const printCards=()=>{const w=h('div',{class:'esc-print'});
+    room.p.forEach((p,k)=>w.append(h('div',{class:'esc-pc'},h('div',{class:'eyebrow'},`${room.title} · Station ${k+1}`),h('p',{class:'keyq'},p.q),
+      p.t==='mc'?h('ul',{},p.o.map(o=>h('li',{},'☐ '+o))):p.t==='order'?h('div',{},h('p',{},'Begriffe: '+shuffle(p.o.slice()).join(' · ')),h('p',{},'Reihenfolge: ______________________________________')):h('p',{},'Antwort: ______________________________'),
+      h('p',{style:'margin-top:14px'},`Habt ihr die Lösung? Zeigt sie der Lehrkraft – ihr bekommt Buchstabe Nr. ${p.pos}.`))));
+    w.append(h('div',{class:'esc-pc'},h('div',{class:'eyebrow'},'Lösungsblatt für die Lehrkraft'),h('h3',{},room.title+' – Codewort: '+room.code),
+      h('ol',{},room.p.map(p=>h('li',{},(p.t==='mc'?p.o[p.a]:p.t==='order'?p.o.join(' → '):String(p.a).split('/')[0])+` → Buchstabe ${p.pos}: ${room.code[p.pos-1]}`)))));
+    document.body.append(w);document.body.classList.add('esc-printing');const done=()=>{w.remove();document.body.classList.remove('esc-printing');window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);window.print();setTimeout(()=>{if(document.body.contains(w)&&!matchMedia('print').matches)done()},4000)};
+  intro();
+}
+
 /* ===== Word-Export (.docx) der Arbeitsblätter ===== */
 let docxLib=null;
 function loadDocx(){
@@ -3898,7 +4091,7 @@ const TABS=[['blatt','Arbeitsblatt','sheet'],['sim','Simulation','sim'],['quiz',
 const LOGO='<svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 33 C6 18 16 6 34 5 C34 22 24 33 8 33 Z" style="fill:var(--leaf)"/><path d="M8 33 C14 24 20 17 28 11" style="fill:none;stroke:var(--paper);stroke-width:2.2;stroke-linecap:round"/><circle cx="30" cy="30" r="5" style="fill:var(--pollen)"/></svg>';
 const TOOLS=[
  ['Rätsel',[['kreuz','Kreuzworträtsel','puzzle'],['suche','Wortsuchrätsel','puzzle']]],
- ['Klassenspiele',[['live','Live-Quiz','live'],['ms','Millionenshow','trophy']]],
+ ['Klassenspiele',[['live','Live-Quiz','live'],['ms','Millionenshow','trophy'],['wer','Wer bin ich?','quiz'],['escape','Escape-Room','puzzle']]],
  ['Material',[['bilder','Bilderbibliothek','img']]]];
 let cleanup=null;
 
@@ -3929,6 +4122,8 @@ function route(){
   if(tool==='live')return livePage(main,parts[1]);
   if(tool==='join')return joinPage(main,parts[1]);
   if(tool==='bilder')return libraryPage(main);
+  if(tool==='wer')return werBinIchPage(main,parts[1]);
+  if(tool==='escape')return escapePage(main,parts[1]);
   let tab='blatt',id=raw;
   const m=raw.match(/^(.*)-(sim|quiz|spiel)$/);if(m){id=m[1];tab=m[2]}
   const topic=TOPICS.find(t=>t.id===id);
