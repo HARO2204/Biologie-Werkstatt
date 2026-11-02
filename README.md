@@ -23,7 +23,8 @@ Jede Seite hat einen **QR-Code**, der direkt zum Thema und Reiter führt.
 | Klasse | Stand |
 |---|---|
 | 1. Klasse | alle 9 Anwendungsbereiche mit Material |
-| 2.–3. Klasse | Gerüst mit Lehrplan-Themen, Material folgt |
+| 2. Klasse | alle 9 Anwendungsbereiche mit Material |
+| 3. Klasse | Gerüst mit Lehrplan-Themen, Material folgt |
 | 4. Klasse | alle 9 Anwendungsbereiche mit Material |
 
 ## Veröffentlichen
