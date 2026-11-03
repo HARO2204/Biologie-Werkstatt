@@ -620,6 +620,26 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
   .ws-c{font-size:12pt}
   .ws-list{display:block;font-size:10pt}.ws-list li{padding:1.5mm 0}
 }
+
+.pz-pdf{padding:34px 40px;box-sizing:border-box;background:#fff;color:#000;overflow:hidden}
+.pz-pdf .sheet{box-shadow:none;border:0;padding:0;margin:0;max-width:none;background:#fff}
+.pz-pdf .ws-wrap{display:grid!important;grid-template-columns:minmax(0,1fr) 150px;gap:0 22px}
+.pz-pdf .ws-wrap>.tw,.pz-pdf .tw{overflow:visible;max-width:none;min-width:0}
+.pz-pdf .ws{width:100%;max-width:560px;grid-template-columns:repeat(var(--cols),minmax(0,1fr))}
+.pz-pdf .ws-c{font-size:17px}.pz-pdf .ws-list{display:block;font-size:14px}.pz-pdf .ws-list li{padding:4px 0}
+.pz-pdf .cw-c input{color:#000}.pz-pdf .cw-c input.sol{color:#B4336A}.pz-pdf .ws-c.sol{box-shadow:inset 0 0 0 2px #B4336A}
+.pz-pdf .cw-wrap{display:block}
+.pz-pdf .cw,.pz-pdf .tw:has(.cw){width:100%}
+.pz-pdf .cw{max-width:min(100%,calc(var(--cols) * 36px));grid-template-columns:repeat(var(--cols),minmax(0,1fr));margin:0 auto 18px}
+.pz-pdf .cw-clues{columns:2;column-gap:28px;font-size:14px}
+@media print{
+  .cw-wrap{display:block!important}
+  .cw-wrap .tw{overflow:visible}
+  .cw{width:100%;max-width:min(100%,calc(var(--cols) * 9.5mm));grid-template-columns:repeat(var(--cols),minmax(0,1fr));margin:0 auto 6mm}
+  .cw-clues{columns:2;column-gap:8mm;font-size:10.5pt}
+}
+.pz-pdf .cw-clues{display:grid!important;grid-template-columns:1fr 1fr;gap:0 28px;columns:auto}
+@media print{.cw-clues{display:grid!important;grid-template-columns:1fr 1fr;gap:0 8mm;columns:auto}.cw{max-width:min(100%,calc(var(--cols) * 8.5mm))}}
 </style>
 </head>
 <body>
@@ -3273,8 +3293,13 @@ function puzzleShell(main,{tool,title,lead,src,seed,opt,optLabel,optList,onRegen
   const tb=h('div',{class:'toolbar',style:'margin-top:12px'});put(main,tb);
   tb.append(h('button',{class:'btn',html:IC.reset+'Neues Rätsel',onclick:()=>go(src,opt,Math.floor(Math.random()*9999)+1)}));
   tb.append(h('button',{class:'btn',html:IC.qr+'QR-Code',onclick:()=>{const s=isOwn(src)&&!/^e\./.test(src)?encRows(ownRows(src)):src;qrURL(`${tool}-${s}-${seed}-${opt}`,isOwn(src)?'Die eigenen Wörter stecken im QR-Code – alle Kinder bekommen genau dieses Rätsel.':'Alle Kinder bekommen genau dieses Rätsel.')}}));
-  if(!isFramed)tb.append(h('button',{class:'btn',html:IC.print+'Drucken / PDF',onclick:()=>window.print()}));
-  else tb.append(h('span',{class:'hint'},'Drucken: über die GitHub-Version.'));
+  const pdfSol=h('input',{type:'checkbox'});const pdfSt=h('span',{class:'hint',style:'color:var(--muted)'});
+  const pdfBtn=h('button',{class:'btn pri',html:IC.sheet+'PDF speichern',onclick:async()=>{pdfBtn.disabled=true;pdfSt.textContent='PDF wird erstellt …';
+    try{const blob=await puzzlePdf(sheet,pdfSol.checked);const ok=await saveFile(blob,`${tool==='kreuz'?'Kreuzwortraetsel':'Wortsuchraetsel'}-${seed}.pdf`);pdfSt.textContent=ok?'PDF gespeichert.':''}
+    catch(e){pdfSt.textContent='PDF konnte nicht erstellt werden – bitte „Drucken“ verwenden und dort „Als PDF sichern“ wählen.'}pdfBtn.disabled=false}});
+  tb.append(pdfBtn,h('label',{class:'lay-chk'},pdfSol,' mit Lösungsblatt'));
+  if(!isFramed)tb.append(h('button',{class:'btn',html:IC.print+'Drucken',onclick:()=>window.print()}));
+  tb.append(pdfSt);
   const sheet=h('article',{class:'sheet pz-sheet'});
   sheet.innerHTML=`<div class="ws-head"><div class="ws-meta"><label>Name: <input aria-label="Name"></label><label>Klasse: <input aria-label="Klasse" style="width:60px"></label></div><div class="ws-brand">Biologie · Rätsel Nr. ${seed}</div></div>`;
   put(main,sheet);return{tb,sheet};
@@ -3417,6 +3442,29 @@ function ownEditor(src,tool,onCreate){
     list,h('div',{class:'row'},h('button',{class:'btn',html:IC.plus+'Zeile hinzufügen',onclick:()=>{rows.push(['','']);draw();const ins=$$('.own-row input',list);ins[ins.length-2]?.focus()}}),h('button',{class:'btn',onclick:()=>{rows=[['','']];draw()}},'Alle löschen')),
     msg,h('div',{class:'row'},bGo,nameI,bSave,bDel));
   draw();return box;
+}
+
+/* Rätsel als A4-PDF (optional mit Lösungsseite) */
+async function puzzlePdf(sheet,withSol){
+  await loadPdfLibs();
+  const mk=sol=>{const solBtn=[...document.querySelectorAll('.toolbar button')].find(b=>b.textContent.trim()==='Lösung');const was=solBtn&&solBtn.classList.contains('on');
+    if(sol&&solBtn&&!was)solBtn.click();if(!sol&&solBtn&&was)solBtn.click();
+    const c=sheet.cloneNode(true);const src=[...sheet.querySelectorAll('input')],dst=[...c.querySelectorAll('input')];
+    dst.forEach((d,i)=>{const v=src[i]?src[i].value:'';d.setAttribute('value',sol?v:(d.closest('.ws-meta')?v:''));d.value=d.getAttribute('value')});
+    if(solBtn&&solBtn.classList.contains('on')!==was)solBtn.click();
+    c.querySelectorAll('button,.ws-tog,.pz-msg,.msg,[hidden]').forEach(e=>e.remove());
+    if(!sol)c.querySelectorAll('.found,.st,.ok,.bad,.hl').forEach(e=>e.classList.remove('found','st','ok','bad','hl'));
+    c.querySelectorAll('.ws-list li.done').forEach(e=>e.classList.remove('done'));
+    if(sol){const t=c.querySelector('h2');if(t)t.textContent+=' – Lösung'}
+    const page=h('div',{class:'a4page pz-pdf'});const inner=h('div',{class:'pz-pdf-in'},c);page.append(inner);return [page,inner]};
+  const root=layRoot();root.innerHTML='';const pages=[mk(false)];if(withSol)pages.push(mk(true));
+  pages.forEach(([p])=>root.append(p));await settle(root);
+  for(const [p,inner] of pages){const aw=A4W-2*PADX,ahh=A4H-2*PADY;const k=Math.min(1,aw/inner.scrollWidth,ahh/inner.scrollHeight);if(k<1){inner.style.transform=`scale(${k})`;inner.style.transformOrigin='top left';inner.style.width=(aw/k)+'px'}}
+  const {PDFDocument}=window.PDFLib;const pdf=await PDFDocument.create();
+  for(const [p] of pages){const cv=await window.html2canvas(p,{scale:2,backgroundColor:'#ffffff',width:A4W,height:A4H,logging:false,useCORS:true});
+    const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));const img=await pdf.embedJpg(await blob.arrayBuffer());
+    pdf.addPage([595.28,841.89]).drawImage(img,{x:0,y:0,width:595.28,height:841.89})}
+  root.innerHTML='';return new Blob([await pdf.save()],{type:'application/pdf'});
 }
 
 const put=(el,...k)=>el.append(...k.flat().filter(x=>x!=null&&x!==false));
