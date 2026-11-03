@@ -658,6 +658,13 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
 @media print{.pa .hint,.pa-vided{display:none}.pa-doc{border:0;padding:0;box-shadow:none}.pa-t{font-size:10pt}.pa-t tr{break-inside:avoid}}
 @media (max-width:640px){.pa-t{table-layout:fixed}.pa-t td,.pa-t th{padding:4px;overflow-wrap:anywhere}.pa-chk{width:3em}.pa-nr{width:1.6em}.pa-pf{width:1.4em}}
 @media print{.pa-t{font-size:9.5pt}.pa-t td,.pa-t th{padding:3px 6px}.pa-sub,.pa-fr{font-size:8.5pt}.pa-merk{padding:6px 10px;margin-top:8px}.pa-merk p{font-size:10pt;line-height:1.4}.pa-title{font-size:15pt;margin:6px 0 2px}.pa-lead{font-size:9pt}.pa-qrc img{width:54px;height:54px}.pa-box{width:18px;height:18px}}
+
+/* Linklisten */
+.lk-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:16px 0;max-width:980px}
+.lk-box h3{margin:0 0 8px;font-size:1.1rem}.lk-box h4{margin:14px 0 4px;font-size:1rem}
+.lk-box ul{margin:0;padding-left:1.2em}.lk-box li{margin:5px 0;line-height:1.4}.lk-box a{color:var(--sky);font-weight:700}.lk-d{color:var(--muted);font-size:.9rem}
+.lk-box details{margin-top:10px}.lk-box summary{cursor:pointer;font-weight:700}.lk-note{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+@media print{.lk-box{display:none}}
 </style>
 </head>
 <body>
@@ -3912,7 +3919,7 @@ function renderPlan(t,host){
     h('button',{class:'btn',html:IC.reset+'Original',onclick:()=>{store.set(key,'');build()}}),
     h('button',{class:'btn',html:IC.print+'Drucken / als PDF',onclick:()=>{if(editing){store.set(key,doc.innerHTML)}window.print()}}),
     h('button',{class:'btn',html:IC.puzzle+'Escape-Room der Klasse',onclick:()=>{location.hash='escape-'+ESC_BY_K[t.k]}}));
-  box.append(tb,h('p',{class:'hint',style:'color:var(--muted);margin:6px 0 12px'},'Planungsvorschlag – mit „Bearbeiten“ kannst du alles direkt ändern; deine Version wird auf diesem Gerät gespeichert.'),doc);host.append(box);build();
+  box.append(tb,h('p',{class:'hint',style:'color:var(--muted);margin:6px 0 12px'},'Planungsvorschlag – mit „Bearbeiten“ kannst du alles direkt ändern; deine Version wird auf diesem Gerät gespeichert.'),doc,linkBox(t));host.append(box);build();
 }
 
 /* ===== Planarbeit: Laufzettel zum selbstständigen Arbeiten ===== */
@@ -4068,6 +4075,107 @@ async function domToPdf(el){
   const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));const img=await pdf.embedJpg(await blob.arrayBuffer());
   pdf.addPage([595.28,841.89]).drawImage(img,{x:0,y:0,width:595.28,height:841.89});root.innerHTML='';
   return new Blob([await pdf.save()],{type:'application/pdf'});
+}
+
+/* ===== Lehrerinfo: Linklisten (Stand November 2026) ===== */
+const L_={
+ bmlWissen:['Wissensangebote für Schulen (Landwirtschaftsministerium)','https://www.bmluk.gv.at/im-fokus/bildung/wissensangebote.html','Übersicht über Bildungsangebote zu Wald, Wasser, Land und Lebensmitteln'],
+ wald:['Wissensangebote Wald (BMLUK)','https://www.bmluk.gv.at/im-fokus/bildung/wissensangebote/wald.html','Materialien und Angebote rund um den österreichischen Wald'],
+ waldpaed:['Waldpädagogik in Österreich (BMLUK)','https://www.bmluk.gv.at/im-fokus/bildung/wissensangebote/wald/waldpaedagogik.html','zertifizierte Waldpädagoginnen und -pädagogen für Lehrausgänge finden'],
+ wasser:['Wissensangebote Wasser (BMLUK)','https://www.bmluk.gv.at/im-fokus/bildung/wissensangebote/Wasser.html','Wasser-Bildungsangebote für Schulen'],
+ wasserwerk:['Wasserwerkstatt (BMLUK)','https://www.bmluk.gv.at/im-fokus/bildung/wissensangebote/Wasser/wasserwerkstatt.html','Experimente und Materialien zum Thema Wasser'],
+ genblue:['gen blue – Jugendplattform zum Wasser (BMLUK)','https://www.bmluk.gv.at/im-fokus/bildung/wissensangebote/Wasser/generation_blue.html','Infos, Wettbewerbe und Schulworkshops'],
+ lernortGew:['Lernort Gewässer (Bayerisches Landesamt für Umwelt)','https://www.lfu.bayern.de/wasser/wasserforscher/lehrmaterialien/lernort_gewaesser/index.htm','Lehrmaterialien zur Gewässeruntersuchung mit Bestimmungshilfen'],
+ land:['Wissensangebote Land und Landwirtschaft (BMLUK)','https://www.bmluk.gv.at/im-fokus/bildung/wissensangebote/Land.html','Landwirtschaft und Lebensmittel für die Schule'],
+ landwissen:['Landwissen – Wissen übers Land (BMLUK)','https://www.bmluk.gv.at/im-fokus/bildung/wissensangebote/Land/landwissen.html','Materialien rund um Landwirtschaft in Österreich'],
+ bodenschutz:['Bodenschutz im Überblick (BMLUK)','https://www.bmluk.gv.at/im-fokus/bodenschutz-ueberblick.html','Bodenverbrauch und Bodenschutz in Österreich'],
+ uiuBoden:['„Was gehen mich Böden an?“ (Umwelt im Unterricht)','https://www.umwelt-im-unterricht.de/unterrichtsvorschlaege/was-gehen-mich-boeden-an/print.pdf','fertiger Unterrichtsvorschlag (PDF)'],
+ uiuBoden2:['„Boden ist wertvoll“ (Umwelt im Unterricht)','https://www.umwelt-im-unterricht.de/wochenthemen/boden-ist-wertvoll/print.pdf','Hintergrundinfos und Materialien (PDF)'],
+ uiuInsekt:['„Insekten in Gefahr“ (Umwelt im Unterricht)','https://www.umwelt-im-unterricht.de/wochenthemen/insekten-in-gefahr/print.pdf','Hintergrund zum Insektensterben (PDF)'],
+ uiuAbfall:['„Abfallvermeidung schont Ressourcen“ (Umwelt im Unterricht)','https://www.umwelt-im-unterricht.de/unterrichtsvorschlaege/abfallvermeidung-schont-ressourcen/print.pdf','Unterrichtsvorschlag (PDF)'],
+ uiuTreib:['„Was ist der Treibhauseffekt?“ (Umwelt im Unterricht)','https://www.umwelt-im-unterricht.de/unterrichtsvorschlaege/was-ist-der-treibhauseffekt/print.pdf','Unterrichtsvorschlag mit Arbeitsmaterial (PDF)'],
+ klimabuendnis:['Didaktische Materialien für Pädagog:innen 2026 (Klimabündnis Österreich)','https://www.klimabuendnis.at/wp-content/uploads/2026/04/Didaktische-Materialien-fuer-Paedagoginnen_2026.pdf','Sammlung von Klima-Unterrichtsmaterialien (PDF)'],
+ kipp:['Kippelemente im Klimasystem (planet-schule)','https://www.planet-schule.de/schwerpunkt/klimawandel/kippelemente-unterricht-106.pdf','Unterrichtsmaterial zum Klimawandel (PDF)'],
+ siemensKlima:['Linkliste Klimawandel (Siemens Stiftung)','https://medienportal.siemens-stiftung.org/view/113847','kommentierte Linksammlung, CC BY-SA'],
+ wildbienen:['Wie Wildbienen uns – und wie wir ihnen helfen können (Naturschutzbund)','https://naturschutzbund.at/newsreader-36/items/wie-wildbienen-uns-und-wie-wir-ihnen-helfen-koennen.html','Hintergrund zu Wildbienen in Österreich'],
+ bestaeuber:['Österreichs vergessene Bestäubungskünstler (Naturschutzbund)','https://naturschutzbund.at/newsreader-36/items/ueber-die-bienen-hinaus-oesterreichs-vergessene-bestaeubungskuenstler.html','Schwebfliegen, Käfer, Falter als Bestäuber'],
+ insektenhotel:['Bauanleitung Insektenhotel (Naturschutzbund OÖ)','https://obsthuegelland.at/fileadmin/user_upload/pdfs/Bauanleitung_Insektenhotel_ooeNaturschutzbund.pdf','Projektidee für die Klasse (PDF)'],
+ naturbeob:['naturbeobachtung.at (Naturschutzbund)','https://www.naturbeobachtung.at','Beobachtungen melden und bestimmen – auch mit der Klasse'],
+ kalkalpen:['Unterrichtsmaterial Nationalpark Kalkalpen','https://en.kalkalpen.at/unterrichtsmaterial','Materialien zu Wald, Wildtieren und Natur'],
+ ernaehrung:['Österreichische Ernährungsempfehlungen (Sozialministerium)','https://www.sozialministerium.gv.at/Themen/Gesundheit/Ernährung/Österreichische-Ernährungsempfehlungen-NEU.html','offizielle Ernährungsempfehlungen und Ernährungspyramide'],
+ fgoeErn:['Ernährungsbroschüre 2025 (Fonds Gesundes Österreich)','https://fgoe.org/sites/fgoe.org/files/2025-01/fgoe_ernaehrungsbroschuere_2025_bfrei.pdf','gut verständlich, barrierefrei (PDF)'],
+ bewegung:['Bewegungsempfehlungen für Jugendliche (gesundheit.gv.at)','https://www.gesundheit.gv.at/leben/bewegung/gesund-durch-sport/bewegungsempfehlungen-jugendliche.html','offizielles Gesundheitsportal Österreichs'],
+ fgoeBew:['Bewegungsempfehlungen Kinder und Jugendliche (FGÖ)','https://fgoe.org/sites/fgoe.org/files/2021-03/fgoe_bewegungsempfehlungen_kinder_jugendliche_bfrei.pdf','Broschüre (PDF)'],
+ msd:['Organsysteme des Körpers (MSD Manual, Ausgabe für Patienten)','https://www.msdmanuals.com/de/heim/spezialthemen/der-körper-des-menschen/organsysteme','fachlich geprüftes Medizinlexikon – Hintergrundwissen'],
+ impfSchule:['Impfungen in der Schule (gesundheit.gv.at)','https://www.gesundheit.gv.at/leben/gesundheitsvorsorge/impfungen/impfung-schule.html','Schulimpfprogramm in Österreich'],
+ siemensImmun:['Interaktives Video: So funktioniert unser Immunsystem (Siemens Stiftung)','https://medienportal.siemens-stiftung.org/de/interactive-video-how-our-immune-system-works-114438','ca. 3 Minuten, mit Aufgaben, CC BY-SA'],
+ salmonellen:['Salmonellen (AGES)','https://www.ages.at/themen/krankheitserreger/salmonellen/','Agentur für Gesundheit und Ernährungssicherheit'],
+ lebensmittel:['Lebensmittelsicherheit (Sozialministerium)','https://www.sozialministerium.gv.at/Themen/Gesundheit/Lebensmittel.html','Informationen rund um sichere Lebensmittel'],
+ pilzGesund:['Pilze sammeln – Vergiftungsgefahr (gesundheit.gv.at)','https://www.gesundheit.gv.at/news/aktuelles/aktuell-2025/pilze-sammeln-vergiftungsgefahr.html','Regeln und Erste Hilfe bei Pilzvergiftung'],
+ pilzBfR:['Pilze: Verwechslungen können tödlich enden (BfR)','https://www.bfr.bund.de/presseinformation/pilze-verwechslungen-koennen-toedlich-enden-2026/','Giftpilz-Doppelgänger, aktuelle Infos'],
+ nhmEntw:['Infoblatt „Entwicklung des Lebens“ (Naturhistorisches Museum Wien)','https://www.nhm-wien.ac.at/jart/prj3/nhm-resp/data/uploads/bildung/20221213InfoblattEntwicklungdesLebens_2023-01-11_1501421.pdf','Vorbereitung für einen Museumsbesuch (PDF)'],
+ erdbeben:['Erdbebenheft (GeoSphere Austria)','https://geoweb.geosphere.at/wimages/erdbebenheft.pdf','Erdbeben in Österreich verständlich erklärt (PDF)'],
+ geosphere:['Geologie (GeoSphere Austria)','https://geosphere.at/en/geology','staatlicher geologischer Dienst Österreichs'],
+ rat:['Rat auf Draht – Notruf 147','https://www.rataufdraht.at','anonyme Beratung für Kinder und Jugendliche, auch online'],
+ tirolSex:['Broschüre „Erster Sex und große Liebe“ (InfoEck Tirol)','https://www.tirol.gv.at/fileadmin/themen/gesellschaft-soziales/infoeck/downloads/2024_Erster_Sex_und_gro%C3%9Fe_Liebe_2024_web.pdf','jugendgerechte Infos (PDF)'],
+ tirolHand:['Handreichung zu „Erster Sex und große Liebe“ (InfoEck Tirol)','https://www.tirol.gv.at/fileadmin/themen/gesellschaft-soziales/infoeck/downloads/2024_handreichung_erster-sex-grosse-liebe.pdf','Hinweise für Pädagog:innen (PDF)'],
+ tabak:['Broschüre Tabak (wienXtra Jugendinfo)','https://www.wienxtra.at/fileadmin/web/jugendinfo/Beratung/Brosch%C3%BCren/Tabak.pdf','jugendgerechte Infos zu Rauchen und Nikotin (PDF)'],
+ rauchenKepler:['Rauchen bei Jugendlichen (Kepler Uniklinikum)','https://kepleruniklinikum.at/kliniken-einrichtungen/kinder-und-jugendheilkunde/aktuelles/weltnichtrauchertag-rauchen-bei-jugendlichen-erzeugt-fruehzeitig-sucht-und-langzeitschaeden','Sucht und Langzeitschäden aus ärztlicher Sicht'],
+ bildungsserver:['Deutscher Bildungsserver – Biologie','https://www.bildungsserver.de/Biologie-4916-de.html','große geprüfte Linksammlung zu allen Bio-Themen'],
+ siemens:['Medienportal der Siemens Stiftung','https://medienportal.siemens-stiftung.org','freie Unterrichtsmedien (CC-Lizenzen), Suche nach Thema'],
+ uiu:['Umwelt im Unterricht','https://www.umwelt-im-unterricht.de','kostenlose Unterrichtsvorschläge zu Umweltthemen (deutsches Umweltministerium)'],
+ planet:['planet-schule.de','https://www.planet-schule.de','Schulfilme und Materialien von SWR und WDR']
+};
+const LINKS={
+ lebensraum:['naturbeob','kalkalpen','uiuInsekt'],
+ bluetenpflanzen:['naturbeob','bestaeuber','kalkalpen'],
+ bestaeubung:['wildbienen','bestaeuber','insektenhotel','uiuInsekt'],
+ wirbeltiere:['naturbeob','kalkalpen','nhmEntw'],
+ angepasstheit:['naturbeob','kalkalpen'],
+ selektion:['nhmEntw','landwissen'],
+ skelett:['msd','bewegung'],
+ verdauung:['ernaehrung','fgoeErn','msd'],
+ fortpflanzung:['rat','msd'],
+ wald:['wald','waldpaed','kalkalpen','naturbeob'],
+ fotosynthese:['wald','uiuTreib'],
+ zellen:['siemens','msd'],
+ vermehrung:['landwissen','naturbeob'],
+ pilze:['pilzGesund','pilzBfR','wald'],
+ mikroben:['salmonellen','lebensmittel','impfSchule'],
+ wirbellose:['naturbeob','uiuInsekt','insektenhotel','wildbienen'],
+ sinne:['msd'],
+ bewegung:['bewegung','fgoeBew'],
+ gewaesser:['wasser','wasserwerk','genblue','lernortGew'],
+ wasserleben:['lernortGew','wasser','naturbeob'],
+ atmung:['msd','tabak'],
+ herz:['msd','bewegung'],
+ ausscheidung:['msd','tabak','rauchenKepler'],
+ gesteine:['geosphere','erdbeben','nhmEntw'],
+ boden:['bodenschutz','uiuBoden','uiuBoden2','landwissen'],
+ fossilien:['nhmEntw','geosphere'],
+ kladogramme:['nhmEntw','siemens'],
+ landwirtschaft:['land','landwissen','bodenschutz','ernaehrung'],
+ siedlung:['uiuAbfall','naturbeob'],
+ klima:['uiuTreib','klimabuendnis','kipp','siemensKlima'],
+ genetik:['siemens','msd'],
+ immunsystem:['siemensImmun','impfSchule','salmonellen'],
+ nerven:['msd'],
+ verhuetung:['tirolSex','tirolHand','rat'],
+ identitaet:['rat','tirolSex','tirolHand'],
+ evolution:['nhmEntw','siemens']
+};
+const LINKS_GEN=['bildungsserver','siemens','uiu','planet','bmlWissen'];
+const linkItem=k=>{const l=L_[k];return h('li',{},h('a',{href:l[1],target:'_blank',rel:'noopener'},l[0]),h('span',{class:'lk-d'},' – '+l[2]))};
+function linkBox(t){const ks=LINKS[t.id]||[];
+  return h('section',{class:'lk-box'},h('h3',{},'🔗 Lehrerinfo: Links zum Thema'),
+    ks.length?h('ul',{},ks.map(linkItem)):null,
+    h('details',{},h('summary',{},'Allgemeine Fundgruben für Biologie'),h('ul',{},LINKS_GEN.map(linkItem))),
+    h('p',{class:'lk-note'},'Stand: November 2026. Externe Seiten können sich ändern – bitte vor dem Einsatz kurz prüfen. PDF-Links öffnen das Dokument direkt.'))}
+function linksPage(main){document.title='Linksammlung · Biologie-Werkstatt';
+  put(main,h('header',{class:'t-head'},h('div',{class:'eyebrow'},'Material'),h('h1',{},'Linksammlung für Lehrkräfte'),h('p',{class:'lp'},'Geprüfte Fundgruben zu jedem Thema – vor allem österreichische Stellen (Ministerien, Gesundheitsportal, Naturschutzbund, GeoSphere, NHM Wien). Stand November 2026.')));
+  put(main,h('section',{class:'lk-box'},h('h3',{},'Allgemeine Fundgruben'),h('ul',{},LINKS_GEN.map(linkItem))));
+  KLASSEN.forEach(K=>{const sec=h('section',{class:'lk-box'},h('h3',{},K.k+'. Klasse'));
+    TOPICS.filter(t=>t.k===K.k).forEach(t=>{const ks=LINKS[t.id]||[];if(!ks.length)return;sec.append(h('h4',{},h('a',{href:'#'+t.id+'-plan'},t.title)),h('ul',{},ks.map(linkItem)))});put(main,sec)});
 }
 
 /* ===== Word-Export (.docx) der Arbeitsblätter ===== */
@@ -4432,7 +4540,7 @@ const LOGO='<svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><
 const TOOLS=[
  ['Rätsel',[['kreuz','Kreuzworträtsel','puzzle'],['suche','Wortsuchrätsel','puzzle']]],
  ['Klassenspiele',[['live','Live-Quiz','live'],['ms','Millionenshow','trophy'],['wer','Wer bin ich?','quiz'],['escape','Escape-Room','puzzle']]],
- ['Material',[['bilder','Bilderbibliothek','img']]]];
+ ['Material',[['bilder','Bilderbibliothek','img'],['links','Linksammlung','sheet']]]];
 let cleanup=null;
 
 function buildSide(){
@@ -4462,6 +4570,7 @@ function route(){
   if(tool==='live')return livePage(main,parts[1]);
   if(tool==='join')return joinPage(main,parts[1]);
   if(tool==='bilder')return libraryPage(main);
+  if(tool==='links')return linksPage(main);
   if(tool==='wer')return werBinIchPage(main,parts[1]);
   if(tool==='escape')return escapePage(main,parts[1]);
   let tab='blatt',id=raw;
