@@ -612,6 +612,14 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
 @media print{.plan .hint{display:none}.plan-doc{border:0;padding:0}.plan-t{font-size:10pt}.plan-t tr{break-inside:avoid}.plan-link{color:inherit;text-decoration:none}}
 .ws-list li{max-width:100%;overflow-wrap:anywhere}
 .ws-wrap{display:flex!important;flex-wrap:wrap;gap:20px 28px}.ws-wrap>.tw{flex:0 1 auto;max-width:100%}.ws-wrap>div:last-child{flex:1 1 180px;min-width:180px}
+@media print{
+  .ws-wrap{display:grid!important;grid-template-columns:minmax(0,1fr) 34mm;gap:0 6mm}
+  .ws-wrap>.tw{overflow:visible;max-width:none;min-width:0}
+  .ws-wrap>div:last-child{min-width:0}
+  .ws{width:100%;max-width:150mm;grid-template-columns:repeat(var(--cols),minmax(0,1fr))}
+  .ws-c{font-size:12pt}
+  .ws-list{display:block;font-size:10pt}.ws-list li{padding:1.5mm 0}
+}
 </style>
 </head>
 <body>
