@@ -349,7 +349,7 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
 .ws-c.st{background:var(--pollen);color:#000}
 .ws-c.found{background:hsl(var(--hue) 70% 70% / .6);border-radius:4px}
 .ws-c.sol{box-shadow:inset 0 0 0 2px var(--berry);border-radius:4px}
-.ws-list{list-style:none;padding:0;margin:0;columns:2;gap:16px;font-weight:700}
+.ws-list{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:4px 22px;font-weight:700;letter-spacing:.02em}
 .ws-list li{padding:2px 0;break-inside:avoid} .ws-list li.done{text-decoration:line-through;color:var(--muted);font-weight:400}
 .ws-msg{font-weight:700;color:var(--ok)} .ws-tog{font-size:.85rem;display:flex;gap:6px;align-items:center}
 
@@ -610,6 +610,8 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
 .plan-note{background:var(--bone);border-radius:8px;padding:8px 12px}.plan-note.warn{background:#FCEFD6}
 @media (max-width:640px){.plan-doc{padding:14px}.plan-t{font-size:.8rem}.plan-t td:nth-child(5),.plan-t th:nth-child(5),.plan-t td:nth-child(4),.plan-t th:nth-child(4){display:none}}
 @media print{.plan .hint{display:none}.plan-doc{border:0;padding:0}.plan-t{font-size:10pt}.plan-t tr{break-inside:avoid}.plan-link{color:inherit;text-decoration:none}}
+.ws-list li{max-width:100%;overflow-wrap:anywhere}
+.ws-wrap{display:flex!important;flex-wrap:wrap;gap:20px 28px}.ws-wrap>.tw{flex:0 1 auto;max-width:100%}.ws-wrap>div:last-child{flex:1 1 180px;min-width:180px}
 </style>
 </head>
 <body>
