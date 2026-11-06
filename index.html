@@ -665,6 +665,15 @@ figure.deco svg,figure.deco img{width:100%;height:auto;display:block}
 .lk-box ul{margin:0;padding-left:1.2em}.lk-box li{margin:5px 0;line-height:1.4}.lk-box a{color:var(--sky);font-weight:700}.lk-d{color:var(--muted);font-size:.9rem}
 .lk-box details{margin-top:10px}.lk-box summary{cursor:pointer;font-weight:700}.lk-note{font-size:.8rem;color:var(--muted);margin:10px 0 0}
 @media print{.lk-box{display:none}}
+
+.pa-ed{background:var(--panel);border:2px dashed var(--pollen);border-radius:14px;padding:14px 16px;margin:0 0 14px;max-width:900px}
+.pa-ed h3{margin:4px 0 10px}.pa-grid2{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.pa-f{display:grid;gap:3px;margin:6px 0;font-size:.85rem;font-weight:700}.pa-f input,.pa-f textarea,.pa-f select,.pa-rowhead select{font:inherit;font-weight:400;font-size:.95rem;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:inherit;width:100%;box-sizing:border-box}
+.pa-row{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:8px 0;background:var(--paper)}
+.pa-rowhead{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.pa-rowhead select{width:auto}.pa-mv{margin-left:auto;display:flex;gap:4px}
+.btn.sm{padding:4px 9px;min-height:0;font-size:.9rem}.btn.danger{color:var(--berry)}
+@media (max-width:640px){.pa-grid2{grid-template-columns:1fr}.pa-mv{margin-left:0}}
+@media print{.pa-ed{display:none!important}}
 </style>
 </head>
 <body>
@@ -4024,45 +4033,87 @@ genetik:{dauer:'3–4 Unterrichtsstunden',merk:['Vererbung','Die Erbinformation 
   ['quiz',1,'EA','Mach das Quiz (mindestens 6 von 8 Punkten).']]}
 };
 const PA_ICON={heft:'✏️',blatt:'📄',sim:'📱',quiz:'📱',spiel:'🎲',kreuz:'🧩',suche:'🧩',wer:'❓',video:'🎬',versuch:'🔬',zeichnen:'🎨',lesen:'📝',kontrolle:'✅'};
-const PA_ART={heft:'Heft',blatt:'Arbeitsblatt',sim:'Simulation (iPad)',quiz:'Quiz (iPad)',spiel:'Spiel (iPad)',kreuz:'Rätsel',suche:'Rätsel',wer:'Rätsel (iPad)',video:'Video (iPad + Kopfhörer)',versuch:'Versuch',zeichnen:'Heft',lesen:'Plakat'};
+const PA_ART={heft:'Heft',blatt:'Arbeitsblatt',sim:'Simulation (iPad)',quiz:'Quiz (iPad)',spiel:'Spiel (iPad)',kreuz:'Rätsel',suche:'Rätsel',wer:'Rätsel (iPad)',video:'Video (iPad + Kopfhörer)',versuch:'Versuch',zeichnen:'Heft',lesen:'Plakat',link:'Internet (iPad)',buch:'Schulbuch',frei:'Auftrag'};
+const PA_ARTEN=[['heft','✏️ Heft / Merktext abschreiben'],['zeichnen','🎨 Zeichnen ins Heft'],['blatt','📄 Arbeitsblatt'],['buch','📘 Schulbuch'],['versuch','🔬 Versuch'],['lesen','📝 Plakat / Präsentation'],['sim','📱 Simulation (QR)'],['quiz','📱 Quiz (QR)'],['spiel','🎲 Spiel (QR)'],['kreuz','🧩 Kreuzworträtsel (QR)'],['suche','🧩 Wortsuchrätsel (QR)'],['wer','❓ Wer bin ich? (QR)'],['video','🎬 Video (Link + QR)'],['link','🔗 Internetseite (Link + QR)'],['frei','• freier Auftrag']];
+Object.assign(PA_ICON,{link:'🔗',buch:'📘',frei:'•'});
+const PA_SOZ=['EA','PA','GA','EA / PA','Plenum'];
+const PA_TPL={heft:'Schreibe die Überschrift und den Merktext ins Heft.',zeichnen:'Zeichne … ins Heft und beschrifte.',blatt:'Bearbeite das Arbeitsblatt.',buch:'Lies im Schulbuch Seite ___ und beantworte die Fragen ___.',versuch:'Führe den Versuch durch und notiere deine Beobachtungen.',lesen:'Gestaltet zu zweit ein Plakat zum Thema.',sim:'Öffne die Simulation und notiere deine Beobachtungen im Heft.',quiz:'Mach das Quiz (mindestens 6 von 8 Punkten).',spiel:'Spiele das Spiel zum Thema.',kreuz:'Löse das Kreuzworträtsel.',suche:'Löse das Wortsuchrätsel.',wer:'Löse drei „Wer bin ich?“-Rätsel.',video:'Schau dir das Video an und beantworte die Fragen im Heft.',link:'Öffne die Internetseite und schreibe drei neue Dinge ins Heft, die du gelernt hast.',frei:''};
 
-function paRoute(t,a){return {sim:t.id+'-sim',quiz:t.id+'-quiz',spiel:t.id+'-spiel',kreuz:'kreuz-'+t.id,suche:'suche-'+t.id,wer:'wer-k'+t.k}[a[0]]||null}
-function qrImg(text,size){const d=h('div',{class:'pa-qr'});try{new QRCode(d,{text,width:size*3,height:size*3,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}catch(e){}
-  const c=d.querySelector('canvas');if(!c)return null;return h('img',{alt:'QR-Code',width:size,height:size,src:c.toDataURL()})}
+/* Daten: aus Vorlage oder automatisch erzeugt */
+function paDefault(t){const P=PLANARBEIT[t.id];const sh=t.sheets||[t.sheet];
+  if(P)return {titel:'Planarbeit: '+t.title,dauer:P.dauer,merkT:P.merk[0],merkX:P.merk[1],
+    a:P.a.map(([art,pf,soz,txt,ex])=>({art,pf:!!pf,soz,txt,ref:typeof ex==='number'?ex:null,url:art==='video'&&ex?ex.url||'':'',hinweis:art==='video'&&ex?ex.t:'',q:art==='video'&&ex?ex.q.slice():[]}))};
+  const a=[{art:'heft',pf:true,soz:'EA',txt:PA_TPL.heft}];
+  sh.forEach((s,i)=>{if(i<3)a.push({art:i===2?'versuch':'blatt',pf:i===0,soz:i===2?'GA':'EA',txt:i===2?`Führt den Forscherauftrag durch.`:'Bearbeite das Arbeitsblatt.',ref:i})});
+  if(t.sim)a.splice(2,0,{art:'sim',pf:true,soz:'EA',txt:PA_TPL.sim});
+  if(t.games&&t.games.length)a.push({art:'spiel',pf:false,soz:'PA',txt:`Spiele „${t.games[0].title}“.`});
+  a.push({art:'quiz',pf:true,soz:'EA',txt:PA_TPL.quiz});
+  return {titel:'Planarbeit: '+t.title,dauer:'2–3 Unterrichtsstunden',merkT:t.title,merkX:'(Hier deinen Merktext eintragen – mit „Bearbeiten“.)',a,neu:true}}
+function paLoad(t){try{const s=store.get('pa2:'+t.id);if(s)return JSON.parse(s)}catch(e){}return paDefault(t)}
+function paRouteOf(t,x){return {sim:t.id+'-sim',quiz:t.id+'-quiz',spiel:t.id+'-spiel',kreuz:'kreuz-'+t.id,suche:'suche-'+t.id,wer:'wer-k'+t.k}[x.art]||null}
 
 function renderPlanarbeit(t,host){
-  const P=PLANARBEIT[t.id];const key='pa:'+t.id;const vkey='pavid:'+t.id;
-  const sh=t.sheets||[t.sheet];let editing=false;
+  const sh=t.sheets||[t.sheet];let D=paLoad(t);let editing=false;
+  const save=()=>{store.set('pa2:'+t.id,JSON.stringify(D))};
   const tb=h('div',{class:'toolbar'});const st=h('span',{class:'hint',style:'color:var(--muted)'});
-  const doc=h('div',{class:'pa-doc sheet'});
-  const vids=()=>{try{return JSON.parse(store.get(vkey)||'{}')}catch(e){return{}}};
-  const build=()=>{const saved=store.get(key);if(saved){doc.innerHTML=saved;return}
-    doc.innerHTML='';const V=vids();
+  const ed=h('div',{class:'pa-ed',hidden:true});const doc=h('div',{class:'pa-doc sheet'});
+  const view=()=>{doc.innerHTML='';
     doc.append(h('div',{class:'ws-head'},h('div',{class:'ws-meta'},h('label',{},'Name: ',h('input',{'aria-label':'Name'})),h('label',{},'Klasse: ',h('input',{'aria-label':'Klasse',style:'width:60px'}))),h('div',{class:'ws-brand'},`Biologie · ${t.k}. Klasse · Planarbeit`)),
-      h('h2',{class:'pa-title'},'Planarbeit: '+t.title),
-      h('p',{class:'pa-lead'},`Zeit: ${P.dauer} · ★ = Pflicht, ☆ = Wahlaufgabe (wenn du mit den Pflichtaufgaben fertig bist). Hake ab, was du erledigt hast. Die Lehrkraft kontrolliert mit Unterschrift.`));
-    const tbl=h('table',{class:'pa-t'},h('thead',{},h('tr',{},['Nr.','','Auftrag','','Erledigt','Kontrolle'].map(x=>h('th',{},x)))));const tbody=h('tbody');
-    P.a.forEach((a,i)=>{const [art,pf,soz,txt,ex]=a;let cell=h('td',{class:'pa-auf'},h('div',{class:'pa-art'},PA_ART[art]+' · '+soz),h('div',{},txt));
-      if(art==='blatt'&&sh[ex])cell.append(h('div',{class:'pa-sub'},`→ Blatt ${'ABCD'[ex]}: „${sh[ex].title}“`));
-      if(art==='versuch'&&ex!=null&&sh[ex])cell.append(h('div',{class:'pa-sub'},`→ Blatt ${'ABCD'[ex]}: „${sh[ex].title}“`));
-      if(art==='heft')cell.append(h('div',{class:'pa-sub'},'→ Merktext siehe unten'));
-      let qr=null;const r=paRoute(t,a);
-      if(art==='video'){const url=V[i]||ex.url||'';cell.append(h('div',{class:'pa-sub'},ex.t),h('ol',{class:'pa-fr'},ex.q.map(q=>h('li',{},q))));if(url){cell.append(h('div',{class:'pa-sub pa-url'},url));qr=qrImg(url,64)}else cell.append(h('div',{class:'pa-sub'},'Link: _______________________________ (von der Lehrkraft)'))}
-      else if(r){qr=qrImg(baseURL()+'#'+r,64)}
-      tbody.append(h('tr',{},h('td',{class:'pa-nr'},String(i+1)),h('td',{class:'pa-pf',title:pf?'Pflicht':'Wahl'},pf?'★':'☆'),cell,h('td',{class:'pa-qrc'},qr||h('span',{class:'pa-ic'},PA_ICON[art])),h('td',{class:'pa-chk'},h('span',{class:'pa-box'})),h('td',{class:'pa-sig'})))});
-    tbl.append(tbody);doc.append(tbl,
-      h('div',{class:'pa-merk'},h('div',{class:'pa-mh'},'✏️ Merktext – schreibe ihn ins Heft ab'),h('h3',{},P.merk[0]),h('p',{},P.merk[1])),
-      h('p',{class:'pa-foot'},'📱 = mit dem iPad den QR-Code scannen. Ohne iPad: Die Lehrkraft gibt dir das Arbeitsblatt ausgedruckt.'))};
-  const vidEditor=()=>{const box=h('div',{class:'pa-vided'});P.a.forEach((a,i)=>{if(a[0]!=='video')return;const V=vids();const inp=h('input',{type:'url',placeholder:'https://… (Video-Link einfügen)',value:V[i]||a[4].url||'',style:'flex:1;min-width:220px'});
-      box.append(h('label',{class:'row'},h('b',{},`Video bei Aufgabe ${i+1}:`),inp,h('button',{class:'btn',onclick:()=>{const v=vids();v[i]=inp.value.trim();store.set(vkey,JSON.stringify(v));store.set(key,'');build();st.textContent='Link gespeichert – der QR-Code ist aktualisiert.'}},'Übernehmen')))});return box.children.length?box:null};
-  tb.append(h('button',{class:'btn pri',html:IC.sheet+'PDF speichern',onclick:async e=>{const b=e.currentTarget;b.disabled=true;st.textContent='PDF wird erstellt …';
+      h('h2',{class:'pa-title'},D.titel),
+      h('p',{class:'pa-lead'},`${D.dauer?'Zeit: '+D.dauer+' · ':''}★ = Pflicht, ☆ = Wahlaufgabe (wenn du mit den Pflichtaufgaben fertig bist). Hake ab, was du erledigt hast. Die Lehrkraft kontrolliert mit Unterschrift.`));
+    const tbody=h('tbody');
+    D.a.forEach((x,i)=>{const cell=h('td',{class:'pa-auf'},h('div',{class:'pa-art'},(PA_ART[x.art]||'')+(x.soz?' · '+x.soz:'')),h('div',{},x.txt||''));
+      if((x.art==='blatt'||x.art==='versuch')&&x.ref!=null&&sh[x.ref])cell.append(h('div',{class:'pa-sub'},`→ Blatt ${'ABCD'[x.ref]}: „${sh[x.ref].title}“`));
+      if(x.art==='heft'&&D.merkX)cell.append(h('div',{class:'pa-sub'},'→ Merktext siehe unten'));
+      if(x.hinweis)cell.append(h('div',{class:'pa-sub'},x.hinweis));
+      if(x.q&&x.q.filter(Boolean).length)cell.append(h('ol',{class:'pa-fr'},x.q.filter(Boolean).map(q=>h('li',{},q))));
+      let qr=null;
+      if(x.art==='video'||x.art==='link'){if(x.url){cell.append(h('div',{class:'pa-sub pa-url'},x.url));qr=qrImg(x.url,64)}else cell.append(h('div',{class:'pa-sub'},'Link: _______________________________'))}
+      else{const r=paRouteOf(t,x);if(r)qr=qrImg(baseURL()+'#'+r,64)}
+      tbody.append(h('tr',{},h('td',{class:'pa-nr'},String(i+1)),h('td',{class:'pa-pf',title:x.pf?'Pflicht':'Wahl'},x.pf?'★':'☆'),cell,h('td',{class:'pa-qrc'},qr||h('span',{class:'pa-ic'},PA_ICON[x.art]||'')),h('td',{class:'pa-chk'},h('span',{class:'pa-box'})),h('td',{class:'pa-sig'})))});
+    doc.append(h('table',{class:'pa-t'},h('thead',{},h('tr',{},['Nr.','','Auftrag','','Erledigt','Kontrolle'].map(x=>h('th',{},x)))),tbody));
+    if(D.merkX&&D.merkX.trim())doc.append(h('div',{class:'pa-merk'},h('div',{class:'pa-mh'},'✏️ Merktext – schreibe ihn ins Heft ab'),h('h3',{},D.merkT||''),h('p',{},D.merkX)));
+    if(D.a.some(x=>paRouteOf(t,x)||x.url))doc.append(h('p',{class:'pa-foot'},'📱 = mit dem iPad den QR-Code scannen. Ohne iPad: Die Lehrkraft gibt dir das Material ausgedruckt.'))};
+  const changed=()=>{save();view();st.textContent='Änderungen gespeichert.'};
+  const field=(lab,el)=>h('label',{class:'pa-f'},h('span',{},lab),el);
+  const inp=(v,on,attrs={})=>{const e=h('input',Object.assign({type:'text',value:v||''},attrs));e.oninput=()=>{on(e.value);changed()};return e};
+  const ta=(v,on,rows=2)=>{const e=h('textarea',{rows});e.value=v||'';e.oninput=()=>{on(e.value);changed()};return e};
+  const sel=(opts,v,on)=>{const e=h('select',{},...opts.map(([k,n])=>h('option',{value:k,selected:String(k)===String(v)},n)));e.onchange=()=>{on(e.value);changed();if(e.dataset.re)editor()};return e};
+  const editor=()=>{ed.innerHTML='';
+    ed.append(h('h3',{},'Planarbeit bearbeiten'),h('div',{class:'pa-grid2'},field('Überschrift',inp(D.titel,v=>D.titel=v)),field('Zeit',inp(D.dauer,v=>D.dauer=v,{placeholder:'z. B. 3 Unterrichtsstunden'}))));
+    const list=h('div',{class:'pa-rows'});
+    D.a.forEach((x,i)=>{const artSel=sel(PA_ARTEN,x.art,v=>{x.art=v;if(!x.txt||Object.values(PA_TPL).includes(x.txt))x.txt=PA_TPL[v]||'';if(v==='blatt'&&x.ref==null)x.ref=0});artSel.dataset.re=1;
+      const row=h('div',{class:'pa-row'},
+        h('div',{class:'pa-rowhead'},h('b',{},`Aufgabe ${i+1}`),artSel,
+          sel([[1,'★ Pflicht'],[0,'☆ Wahl']],x.pf?1:0,v=>x.pf=v==='1'),
+          sel(PA_SOZ.map(s=>[s,s]),x.soz||'EA',v=>x.soz=v),
+          h('span',{class:'pa-mv'},
+            h('button',{class:'btn sm',title:'nach oben',disabled:i===0,onclick:()=>{[D.a[i-1],D.a[i]]=[D.a[i],D.a[i-1]];changed();editor()}},'↑'),
+            h('button',{class:'btn sm',title:'nach unten',disabled:i===D.a.length-1,onclick:()=>{[D.a[i+1],D.a[i]]=[D.a[i],D.a[i+1]];changed();editor()}},'↓'),
+            h('button',{class:'btn sm',title:'kopieren',onclick:()=>{D.a.splice(i+1,0,JSON.parse(JSON.stringify(x)));changed();editor()}},'⧉'),
+            h('button',{class:'btn sm danger',title:'löschen',onclick:()=>{D.a.splice(i,1);changed();editor()}},'🗑'))),
+        field('Auftrag',ta(x.txt,v=>x.txt=v)));
+      if(x.art==='blatt'||x.art==='versuch')row.append(field('Arbeitsblatt',sel([['','– keines –'],...sh.map((s,k)=>[k,`Blatt ${'ABCD'[k]}: ${s.title}`])],x.ref==null?'':x.ref,v=>x.ref=v===''?null:+v)));
+      if(x.art==='video'||x.art==='link'){row.append(field('Link (wird als QR-Code gedruckt)',inp(x.url,v=>x.url=v.trim(),{type:'url',placeholder:'https://…'})),field('Hinweis (z. B. Titel, Quelle)',inp(x.hinweis,v=>x.hinweis=v)),
+        field('Fragen (eine pro Zeile)',ta((x.q||[]).join('\n'),v=>x.q=v.split('\n'),3)))}
+      list.append(row)});
+    const addSel=h('select',{},...PA_ARTEN.map(([k,n])=>h('option',{value:k},n)));
+    ed.append(list,h('div',{class:'row',style:'margin:8px 0 16px'},addSel,h('button',{class:'btn pri',html:IC.plus+'Aufgabe hinzufügen',onclick:()=>{const v=addSel.value;D.a.push({art:v,pf:true,soz:'EA',txt:PA_TPL[v]||'',ref:v==='blatt'?0:null,url:'',hinweis:'',q:[]});changed();editor();list.lastChild&&ed.querySelector('.pa-row:last-child textarea').focus()}})),
+      h('h3',{},'Merktext'),field('Überschrift im Heft',inp(D.merkT,v=>D.merkT=v)),field('Merktext (leer lassen = kein Merktext-Kasten)',ta(D.merkX,v=>D.merkX=v,5)))};
+  const toggle=b=>{editing=!editing;ed.hidden=!editing;b.classList.toggle('pri',editing);b.lastChild.textContent=editing?'Fertig':'Bearbeiten';if(editing)editor()};
+  const exp=()=>saveFile(new Blob([JSON.stringify({biowerk:'planarbeit',topic:t.id,data:D},null,1)],{type:'application/json'}),`Planarbeit-${t.id}.json`);
+  const imp=()=>{const f=h('input',{type:'file',accept:'.json,application/json'});f.onchange=async()=>{try{const j=JSON.parse(await f.files[0].text());if(!j.data||!Array.isArray(j.data.a))throw 0;D=j.data;save();view();if(editing)editor();st.textContent='Planarbeit geladen.'}catch(e){st.textContent='Diese Datei ist keine gespeicherte Planarbeit.'}};f.click()};
+  tb.append(h('button',{class:'btn',html:IC.edit+'<span>Bearbeiten</span>',onclick:e=>toggle(e.currentTarget)}),
+    h('button',{class:'btn pri',html:IC.sheet+'PDF speichern',onclick:async e=>{const b=e.currentTarget;b.disabled=true;st.textContent='PDF wird erstellt …';
       try{const blob=await domToPdf(doc);const ok=await saveFile(blob,`Planarbeit-${t.id}.pdf`);st.textContent=ok?'PDF gespeichert.':''}catch(err){st.textContent='PDF konnte nicht erstellt werden – bitte „Drucken“ verwenden.'}b.disabled=false}}),
     isFramed?null:h('button',{class:'btn',html:IC.print+'Drucken',onclick:()=>window.print()}),
-    h('button',{class:'btn',html:IC.edit+'Bearbeiten',onclick:e=>{editing=!editing;doc.contentEditable=editing;doc.classList.toggle('editing',editing);e.currentTarget.classList.toggle('pri',editing);if(!editing){store.set(key,doc.innerHTML);st.textContent='Deine Version ist gespeichert.'}}}),
-    h('button',{class:'btn',html:IC.reset+'Original',onclick:()=>{store.set(key,'');build();st.textContent=''}}),st);
-  const ve=vidEditor();
-  host.append(h('div',{class:'pa'},tb,h('p',{class:'hint',style:'color:var(--muted);margin:6px 0 10px'},'Laufzettel für selbstständiges Arbeiten. Die QR-Codes führen die Kinder am iPad direkt zur Simulation, zum Quiz oder zum Video. Mit „Bearbeiten“ kannst du Aufgaben ändern oder streichen.'),ve,doc));build();
+    h('button',{class:'btn',html:IC.reset+'<span>Original</span>',onclick:e=>{const b=e.currentTarget;if(!b.dataset.arm){b.dataset.arm=1;b.lastChild.textContent='Wirklich zurücksetzen?';b.classList.add('danger');setTimeout(()=>{delete b.dataset.arm;b.lastChild.textContent='Original';b.classList.remove('danger')},4000);return}delete b.dataset.arm;b.lastChild.textContent='Original';b.classList.remove('danger');store.set('pa2:'+t.id,'');D=paDefault(t);view();if(editing)editor();st.textContent='Vorschlag wiederhergestellt.'}}),
+    h('button',{class:'btn',onclick:exp},'Als Datei sichern'),h('button',{class:'btn',onclick:imp},'Datei laden'),st);
+  host.append(h('div',{class:'pa'},tb,h('p',{class:'hint',style:'color:var(--muted);margin:6px 0 10px'},(D.neu&&!store.get('pa2:'+t.id)?'Für dieses Thema gibt es einen automatisch erstellten Vorschlag – passe ihn mit „Bearbeiten“ an. ':'')+'Mit „Bearbeiten“ kannst du Aufgaben ändern, hinzufügen, löschen und verschieben. Deine Version wird auf diesem Gerät gespeichert; mit „Als Datei sichern“ nimmst du sie auf ein anderes Gerät mit.'),ed,doc));view();
 }
+
+function qrImg(text,size){const d=h('div',{class:'pa-qr'});try{new QRCode(d,{text,width:size*3,height:size*3,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}catch(e){}
+  const c=d.querySelector('canvas');if(!c)return null;return h('img',{alt:'QR-Code',width:size,height:size,src:c.toDataURL()})}
 
 /* beliebiges Element als eine A4-Seite (verkleinert, falls nötig) */
 async function domToPdf(el){
@@ -4583,7 +4634,7 @@ function route(){
   if(!topic.sheet){main.append(h('div',{class:'plan-box',style:'margin-top:20px'},h('h2',{style:'font-size:1.2rem'},'In Vorbereitung'),
     h('p',{},'Dieses Thema ist im Gerüst angelegt. Geplant sind Arbeitsblätter, Quiz, Spiele und diese Simulationen:'),h('ul',{},topic.plan.map(p=>h('li',{},p)))));return}
   const tabs=h('div',{class:'tabs',role:'tablist'});
-  TABS.filter(([k])=>k!=='planarbeit'||PLANARBEIT[id]).forEach(([k,n,ic])=>tabs.append(h('button',{class:'tab',role:'tab','aria-selected':k===tab,onclick:()=>go(id,k),html:IC[ic]+n})));
+  TABS.forEach(([k,n,ic])=>tabs.append(h('button',{class:'tab',role:'tab','aria-selected':k===tab,onclick:()=>go(id,k),html:IC[ic]+n})));
   tabs.append(h('span',{class:'spacer'}),h('button',{class:'btn qrbtn',onclick:()=>qrURL(tab&&tab!=='blatt'?id+'-'+tab:id,'Führt direkt zu diesem Thema und Reiter.'),html:IC.qr+'QR-Code'}));
   const pane=h('div',{class:'pane'});main.append(tabs,pane);
   if(tab==='blatt')renderSheet(topic,pane);
